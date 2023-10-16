@@ -31,7 +31,7 @@ class PublicationApiDataSourceImp implements PublicationApiDataSource {
       // Si es un archivo, crea un MultipartFile directamente.
       try {
         var multipartFile =
-            await http.MultipartFile.fromPath('url_file', urlFile.path);
+            await http.MultipartFile.fromPath('img_file', urlFile.path);
         request.files.add(multipartFile);
       } catch (e) {
         // Manejo de errores durante la creación del MultipartFile.

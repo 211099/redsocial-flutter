@@ -7,6 +7,6 @@ class Publication {
     required this.uuid,
     required this.idUser,
     required this.description,
-    required this.urlFile
+    required this.urlFile,
   });
 } 

@@ -5,20 +5,20 @@ class PublicationModel extends Publication {
     required String uuid,
     required String idUser, 
     required String description, 
-    required dynamic urlFile
+    required dynamic urlFile,
     }) : super (
       uuid: uuid,
       idUser: idUser,
       description: description,
-      urlFile: urlFile
+      urlFile: urlFile,
     );
 
     factory PublicationModel.fromJson(Map<String,dynamic> json) {
       return PublicationModel(
-        uuid: json['idUser'],
-        idUser: json['id_user'],
+        uuid: json['uuid'],
+        idUser: json['idUser'],
         description: json['description'],
-        urlFile: json['url_file']
+        urlFile: json['img_file']
       );
     }
 
@@ -34,9 +34,9 @@ class PublicationModel extends Publication {
     Map<String, dynamic> toJson() {
       return{
         'uuid': uuid,
-        'id_user': idUser,
+        'idUser': idUser,
         'description': description,
-        'url_file': urlFile
+        'img_file': urlFile
       };
     }
   
