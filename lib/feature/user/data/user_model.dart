@@ -55,4 +55,5 @@ class UserMolde extends User {
       'status': status
     };
   }
+  
 }
