@@ -5,8 +5,8 @@ import 'package:actividad1c2/feature/comment/model/comment.dart';
 class CommenModel extends Comment {
   CommenModel({
     required String uuid,
-    required String idPublic,
     required String idUser,
+    required String idPublic,
     required String text,
   }) : super (
     uuid: uuid,
@@ -18,8 +18,8 @@ class CommenModel extends Comment {
     factory CommenModel.fromJson(Map<String,dynamic> json) {
       return CommenModel(
         uuid: json['uuid'],
-        idPublic: json['id_public'],
         idUser: json['id_user'],
+        idPublic: json['id_public'],
         text: json['text']
       );
     }
@@ -36,8 +36,8 @@ class CommenModel extends Comment {
     Map<String,dynamic> toJson() {
       return{
         'uuid': uuid,
-        'id_public': idPublic,
         'id_user': idUser,
+        'id_public': idPublic,
         'text': text
       };
     }
