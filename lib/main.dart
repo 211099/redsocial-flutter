@@ -4,7 +4,7 @@ import 'package:actividad1c2/feature/user/presentation/pages/register.dart';
 import 'package:actividad1c2/feature/user/presentation/pages/restore_pasword.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'feature/user/presentation/blocks/register/register_bloc.dart';
+import 'feature/user/presentation/blocks/login/register_bloc.dart';
 
 void main() {
   runApp(const MyApp());

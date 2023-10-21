@@ -27,7 +27,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           emit(RedirectToRegistrationPage());
         } catch (error) {
           // Maneja errores, por ejemplo, emite un estado de error
-          emit(ErrorState(errorMessage: 'Error al iniciar sesión: $error'));
+          emit(ErrorState(errorMessage: 'Error al iniciar sesiónssssss: $error'));
         }
       }
     });

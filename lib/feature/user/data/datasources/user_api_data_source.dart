@@ -1,9 +1,13 @@
 import 'dart:convert';
 
 import 'package:actividad1c2/feature/user/data/models/user_model.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/entities/user.dart';
 import 'package:http/http.dart' as http;
+
+
 
 abstract class UserApiDataSource {
   Future<void> registerUser(User user);
@@ -101,37 +105,52 @@ class UserApiDataSourceImp implements UserApiDataSource {
     }
   }
 
-  @override
   Future<void> logIn({required String email, required String password}) async {
-    var headers = {
-      'Content-Type': 'application/json',
-    };
-
-    var request = http.Request('POST', Uri.parse('http://localhost:3001/api/v1/user/login'));
-
-    // Impresión de los valores de email y password
-    print('Email: $email, Password: $password');
-    print("ëntreeeeeeeeeeee" + email);
-
-    // Resto del código del método...
-
     try {
-      http.StreamedResponse response = await request.send();
+      var headers = {'Content-Type': 'application/json'};
+      var url = Uri.parse('https://actual-servant-production.up.railway.app/api/v1/user/login');
 
-      if (response.statusCode == 200) {
-        // Desde aquí, puedes manejar la respuesta o almacenarla.
-        // print(await response.stream.bytesToString());
+      var data = jsonEncode({
+        "email": email,
+        "password": password,
+      });
+
+      print("email   " + email);
+      print('Entrando al método de inicio de sesión...');
+
+      var response = await http.post(
+        url,
+        headers: headers,
+        body: data,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        String responseBody = response.body;
+        print('Cuerpo de la respuesta: $responseBody');
+
+        Map<String, dynamic> responseData = jsonDecode(responseBody);
+
+        if (responseData.containsKey("token")) {
+          String token = responseData["token"];
+          print('Token de acceso: $token');
+
+          // Guardar el token en SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
+
+          // Puedes usar 'token' como necesites en tu aplicación.
+        } else {
+          print('La respuesta no contiene un token.');
+        }
+
       } else {
-        // print(response.reasonPhrase);
         throw Exception('Failed to log in. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      // Manejar cualquier error que ocurra durante la llamada de red.
-      // print(e.toString());
+      print('Error al iniciar sesión: $e');
       throw Exception('Failed to log in due to a network error');
     }
   }
-
 
   @override
   Future<void> registerUser(User user) async {

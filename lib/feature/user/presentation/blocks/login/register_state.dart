@@ -16,3 +16,4 @@ class RegisterFailure extends RegisterState {
 }
 
 class RedirectToRegistrationPage extends RegisterState {}
+

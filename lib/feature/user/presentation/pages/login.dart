@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:actividad1c2/feature/user/presentation/pages/register.dart';
 import 'package:actividad1c2/feature/user/presentation/pages/restore_pasword.dart';
-import '../blocks/register/register_bloc.dart';
+import '../blocks/login/register_bloc.dart';
 
 class Login extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
