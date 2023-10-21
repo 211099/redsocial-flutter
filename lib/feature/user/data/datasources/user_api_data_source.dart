@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:actividad1c2/feature/user/data/user_model.dart';
+import 'package:actividad1c2/feature/user/data/models/user_model.dart';
 
-import '../domain/user.dart';
+import '../../domain/entities/user.dart';
 import 'package:http/http.dart' as http;
 
 abstract class UserApiDataSource {
@@ -56,7 +56,7 @@ class UserApiDataSourceImp implements UserApiDataSource {
         Map<String, dynamic> data = jsonDecode(responseBody);
 
         // Creamos un objeto UserMolde a partir de los datos JSON.
-        User user = UserMolde.fromJson(data);
+        User user = UserModel.fromJson(data);
         return user;
       } else {
         // Si la llamada no fue exitosa, lanzamos un error.
@@ -86,7 +86,7 @@ class UserApiDataSourceImp implements UserApiDataSource {
 
         // Aquí utilizamos el método 'fromJson' que definiste en tu clase 'UserMolde'.
         List<User> users =
-            data.map((item) => UserMolde.fromJson(item)).toList();
+            data.map((item) => UserModel.fromJson(item)).toList();
         return users;
       } else {
         // Si la llamada no fue exitosa, lanzamos un error.
@@ -107,27 +107,23 @@ class UserApiDataSourceImp implements UserApiDataSource {
       'Content-Type': 'application/json',
     };
 
-    var request = http.Request(
-        'POST', Uri.parse('http://localhost:3001/api/v1/user/login'));
+    var request = http.Request('POST', Uri.parse('http://localhost:3001/api/v1/user/login'));
 
-    // Aquí estamos tomando el email y la contraseña proporcionados y colocándolos en el cuerpo de la solicitud.
-    request.body = json.encode({
-      "email": email,
-      "password": password,
-    });
+    // Impresión de los valores de email y password
+    print('Email: $email, Password: $password');
+    print("ëntreeeeeeeeeeee" + email);
 
-    request.headers.addAll(headers);
+    // Resto del código del método...
 
     try {
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200) {
-        //desde qui almacenar el token
+        // Desde aquí, puedes manejar la respuesta o almacenarla.
         // print(await response.stream.bytesToString());
       } else {
         // print(response.reasonPhrase);
-        throw Exception(
-            'Failed to log in. Status code: ${response.statusCode}');
+        throw Exception('Failed to log in. Status code: ${response.statusCode}');
       }
     } catch (e) {
       // Manejar cualquier error que ocurra durante la llamada de red.
@@ -135,6 +131,7 @@ class UserApiDataSourceImp implements UserApiDataSource {
       throw Exception('Failed to log in due to a network error');
     }
   }
+
 
   @override
   Future<void> registerUser(User user) async {

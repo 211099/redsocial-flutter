@@ -1,11 +1,69 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:actividad1c2/feature/user/presentation/pages/register.dart';
 import 'package:actividad1c2/feature/user/presentation/pages/restore_pasword.dart';
-import 'package:flutter/material.dart';
+import '../blocks/register/register_bloc.dart';
 
 class Login extends StatelessWidget {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+
+    TextFormField emailField = TextFormField(
+      controller: emailController,
+      decoration: InputDecoration(
+        labelText: 'Email',
+        contentPadding: EdgeInsets.symmetric(vertical: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+      textAlign: TextAlign.center,
+    );
+
+    TextFormField passwordField = TextFormField(
+      controller: passwordController,
+      obscureText: true,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        contentPadding: EdgeInsets.symmetric(vertical: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        alignLabelWithHint: true,
+      ),
+      textAlign: TextAlign.center, // Aquí estaba el error, debe ser 'TextAlign.center'.
+    );
+
+    ElevatedButton loginButton = ElevatedButton(
+      onPressed: () {
+        String email = emailController.text;
+        String password = passwordController.text;
+
+
+        BlocProvider.of<RegisterBloc>(context).add(RegisterButtonPressed(
+          email: email,
+          password: password,
+        ));
+      },
+      child: Container(
+        width: 310,
+        height: 40,
+        margin: EdgeInsets.only(top: 2, left: 4),
+        child: Center(
+          child: Text(
+            'Login',
+            style: TextStyle(
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    );
+
 
     return Scaffold(
       appBar: AppBar(
@@ -32,30 +90,12 @@ class Login extends StatelessWidget {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        contentPadding: EdgeInsets.symmetric(vertical: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    emailField,
                     SizedBox(height: 20),
-                    TextFormField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        contentPadding: EdgeInsets.symmetric(vertical: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        alignLabelWithHint: true,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    passwordField,
                     SizedBox(height: 20),
+                    loginButton,
+                    SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
                         // Aquí puedes agregar la lógica para manejar el inicio de sesión
@@ -66,55 +106,30 @@ class Login extends StatelessWidget {
                         margin: EdgeInsets.only(top: 2, left: 4),
                         child: Center(
                           child: Text(
-                            'Login',
+                            'Register',
                             style: TextStyle(
                               color: Colors.black,
                             ),
                           ),
                         ),
                       ),
-
-                    ),
-                    SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Register()), // Reemplaza 'RegisterView' con el nombre de tu vista de registro
-                        );
-                      },
-                      child: Container(
-                        width: 310,
-                        height: 40,
-                        margin: EdgeInsets.only(top: 2, left: 4),
-                        child: Center(
-                          child: Text(
-                            'register',
-                            style: TextStyle(
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-
                     ),
                     SizedBox(height: 20),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => RestorePassword()), // Reemplaza 'ResetPasswordPage' con el nombre de tu vista de restablecimiento de contraseña
+                          MaterialPageRoute(builder: (context) => RestorePassword()),
                         );
                       },
                       child: Text(
                         'Restore Password',
                         style: TextStyle(
-                          color: Colors.blue, // Puedes personalizar el color del texto
-                          decoration: TextDecoration.underline, // Agrega un subrayado al texto
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ],

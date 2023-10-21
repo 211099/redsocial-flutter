@@ -1,8 +1,8 @@
 
-import 'package:actividad1c2/feature/user/domain/user.dart';
+import 'package:actividad1c2/feature/user/domain/entities/user.dart';
 
-class UserMolde extends User {
-  UserMolde({
+class UserModel extends User {
+  UserModel({
     required String uuid,
     required String name,
     required String lastName,
@@ -20,8 +20,8 @@ class UserMolde extends User {
           status: status,
         );
 
-  factory UserMolde.fromJson(Map<String,dynamic> json) {
-    return UserMolde(
+  factory UserModel.fromJson(Map<String,dynamic> json) {
+    return UserModel(
       uuid: json['uuid'],
       name: json['name'],
       lastName: json['last_name'],
@@ -32,8 +32,8 @@ class UserMolde extends User {
     );
   }
 
-  factory UserMolde.fromEntity(User user) {
-    return UserMolde(
+  factory UserModel.fromEntity(User user) {
+    return UserModel(
       uuid: user.uuid,
       name: user.name,
       lastName: user.lastName,

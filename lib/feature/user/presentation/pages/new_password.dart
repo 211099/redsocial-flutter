@@ -59,15 +59,18 @@ class NewPassword extends StatelessWidget {
                       onPressed: () {
                         // Aquí puedes agregar la lógica para manejar el inicio de sesión
                       },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xFF000000)), // Cambia el color a negro (#000000)
+                      ),
                       child: Container(
                         width: 310,
-                        height: 40,
+                        height: 58,
                         margin: EdgeInsets.only(top: 2, left: 4),
                         child: Center(
                           child: Text(
                             'Send',
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Colors.white, // Mantiene el color del texto en blanco
                             ),
                           ),
                         ),

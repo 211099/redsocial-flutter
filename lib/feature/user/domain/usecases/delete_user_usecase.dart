@@ -1,4 +1,4 @@
-import 'package:actividad1c2/feature/user/domain/user_repository.dart';
+import 'package:actividad1c2/feature/user/domain/repository/user_repository.dart';
 
 class DeleteUserUseCase {
   final UserRepository userRepository;
