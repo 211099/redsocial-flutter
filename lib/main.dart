@@ -1,32 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:actividad1c2/feature/user/presentation/pages/login.dart';
-import 'package:actividad1c2/feature/user/presentation/pages/register.dart';
-import 'package:actividad1c2/feature/user/presentation/pages/restore_pasword.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'feature/user/presentation/blocks/login/register_bloc.dart';
+import 'package:actividad1c2/feature/user/presentation/blocks/login/login_bloc.dart';
+import 'package:actividad1c2/feature/user/presentation/blocks/register/register_user_bloc.dart'; // Asegúrate de importar el RegisterUserBloc
+import 'feature/user/presentation/pages/login.dart';
+import 'feature/user/presentation/pages/new_password.dart';
+import 'feature/user/presentation/pages/register.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<LoginBloc>(
+          create: (context) => LoginBloc(context: context),
         ),
-        useMaterial3: true,
-      ),
-      home: BlocProvider(
-        create: (context) => RegisterBloc(), // Crea una instancia del Bloc de registro
-        child: Login(), // Página de inicio de sesión
+        BlocProvider<RegisterUserBloc>(
+          create: (context) => RegisterUserBloc(context: context),
+        ),
+        // Otros Blocs
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple,
+          ),
+          useMaterial3: true,
+        ),
+        initialRoute: '/login',
+        routes: {
+          // ------------------Controla todo -------------------------------
+          '/login': (context) => BlocProvider<LoginBloc>(
+            create: (context) => LoginBloc(context: context),
+            child: Login(),
+          ),
+          // ------------------- Controla todo------------------------------
+          '/register': (context) => Register(),
+          //'/NewPassword': (context) => NewPassword(),
+          '/new_password': (context) => NewPassword(),
+
+
+        },
       ),
     );
   }

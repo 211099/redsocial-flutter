@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:actividad1c2/feature/user/presentation/pages/register.dart';
 import 'package:actividad1c2/feature/user/presentation/pages/restore_pasword.dart';
-import '../blocks/login/register_bloc.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../blocks/login/login_bloc.dart';
+
 
 class Login extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
@@ -35,7 +37,7 @@ class Login extends StatelessWidget {
         ),
         alignLabelWithHint: true,
       ),
-      textAlign: TextAlign.center, // Aquí estaba el error, debe ser 'TextAlign.center'.
+      textAlign: TextAlign.center,
     );
 
     ElevatedButton loginButton = ElevatedButton(
@@ -43,8 +45,7 @@ class Login extends StatelessWidget {
         String email = emailController.text;
         String password = passwordController.text;
 
-
-        BlocProvider.of<RegisterBloc>(context).add(RegisterButtonPressed(
+        BlocProvider.of<LoginBloc>(context).add(LoginButtonPressed(
           email: email,
           password: password,
         ));
@@ -64,6 +65,27 @@ class Login extends StatelessWidget {
       ),
     );
 
+    ElevatedButton registerButton = ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Register()), // Reemplaza 'HomePage' con el nombre de tu página destino
+        );
+      },
+      child: Container(
+        width: 310,
+        height: 40,
+        margin: EdgeInsets.only(top: 2, left: 4),
+        child: Center(
+          child: Text(
+            'Register',
+            style: TextStyle(
+              color: Colors.black,
+            ),
+          ),
+        ),
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -96,24 +118,7 @@ class Login extends StatelessWidget {
                     SizedBox(height: 20),
                     loginButton,
                     SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Aquí puedes agregar la lógica para manejar el inicio de sesión
-                      },
-                      child: Container(
-                        width: 310,
-                        height: 40,
-                        margin: EdgeInsets.only(top: 2, left: 4),
-                        child: Center(
-                          child: Text(
-                            'Register',
-                            style: TextStyle(
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    registerButton,
                     SizedBox(height: 20),
                     TextButton(
                       onPressed: () {

@@ -1,11 +1,18 @@
 import 'dart:convert';
 
 import 'package:actividad1c2/feature/user/data/models/user_model.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/entities/user.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+
+import '../../presentation/pages/login.dart';
+import '../../presentation/pages/new_password.dart';
+
+
 
 
 
@@ -25,6 +32,10 @@ abstract class UserApiDataSource {
 }
 
 class UserApiDataSourceImp implements UserApiDataSource {
+  final BuildContext context;
+
+  UserApiDataSourceImp({required this.context});
+
   @override
   Future<void> deleteUser(String uuid) async {
     var url = Uri.parse('http://localhost:3001/api/v1/user/$uuid');
@@ -105,7 +116,10 @@ class UserApiDataSourceImp implements UserApiDataSource {
     }
   }
 
-  Future<void> logIn({required String email, required String password}) async {
+  Future<void> logIn({
+    required String email,
+    required String password,
+  }) async {
     try {
       var headers = {'Content-Type': 'application/json'};
       var url = Uri.parse('https://actual-servant-production.up.railway.app/api/v1/user/login');
@@ -133,12 +147,17 @@ class UserApiDataSourceImp implements UserApiDataSource {
         if (responseData.containsKey("token")) {
           String token = responseData["token"];
           print('Token de acceso: $token');
+          Navigator.pushReplacementNamed(context, '/new_password');
+
+
+          print("entre");
 
           // Guardar el token en SharedPreferences
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', token);
 
-          // Puedes usar 'token' como necesites en tu aplicación.
+          // Redirigir a otra página (por ejemplo, la página de inicio)
+
         } else {
           print('La respuesta no contiene un token.');
         }
@@ -152,41 +171,46 @@ class UserApiDataSourceImp implements UserApiDataSource {
     }
   }
 
-  @override
+
   Future<void> registerUser(User user) async {
     var headers = {
       'Content-Type': 'application/json',
     };
 
     var request = http.Request(
-        'POST', Uri.parse('http://localhost:3001/api/v1/user/register'));
-    // Aquí estamos tomando la información del usuario proporcionado y colocándola en el cuerpo de la solicitud.
+        'POST',
+        Uri.parse('https://actual-servant-production.up.railway.app/api/v1/user/register'));
+
     request.body = json.encode({
       "name": user.name,
       "last_name": user.lastName,
       "phone_number": user.phoneNumber,
       "email": user.email,
+      "nick_name": user.nickName,
       "password": user.password,
     });
+
     request.headers.addAll(headers);
+
     try {
       http.StreamedResponse response = await request.send();
 
-      if (response.statusCode == 200) {
-        // Si la llamada fue exitosa, puedes manejar la respuesta aquí, por ejemplo, convertirlo en un objeto o almacenar información.
-        // print(await response.stream.bytesToString());
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print(response.statusCode);
+        // Redirigir al usuario a la pantalla de inicio de sesión
       } else {
-        // Si la llamada no fue exitosa, lanzar un error. Podrías manejar esto de manera diferente, dependiendo de tus necesidades de manejo de errores.
-        // print(response.reasonPhrase);
-        throw Exception(
-            'Failed to register user. Status code: ${response.statusCode}');
+        throw Exception('Failed to log in. Status code: ${response.statusCode}');
       }
+
     } catch (e) {
-      // Manejar cualquier error que ocurra durante la llamada de red.
-      // print(e.toString());
-      throw Exception('Failed to register user due to a network error');
+      print('Error during network call: $e');
+      throw Exception('Failed to register user due to a network error: $e');
     }
   }
+
+
+
+
 
   @override
   Future<void> updateUser(

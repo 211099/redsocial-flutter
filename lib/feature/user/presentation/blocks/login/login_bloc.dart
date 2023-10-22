@@ -1,22 +1,25 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
 import '../../../data/datasources/user_api_data_source.dart';
 
 
-part 'register_event.dart';
-part 'register_state.dart';
+part 'login_event.dart';
+part 'login_state.dart';
 
-class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-  final UserApiDataSource userApiDataSource = UserApiDataSourceImp(); // Crea una instancia de UserApiDataSource
+class LoginBloc extends Bloc<RegisterEvent, LoginState> {
+  final UserApiDataSource userApiDataSource;
+  final BuildContext context;
 
-  RegisterBloc() : super(RegisterInitial()) {
+  LoginBloc({required this.context})
+      : userApiDataSource = UserApiDataSourceImp(context: context),
+        super(LoginInitial()) {
     print('Se creó una instancia de RegisterBloc.');
-
-    on<RegisterButtonPressed>((event, emit) async {
+    on<LoginButtonPressed>((event, emit) async {
       print('Se llamó al evento RegisterButtonPressed.');
 
-      if (event is RegisterButtonPressed) {
+      if (event is LoginButtonPressed) {
         print('Email: ${event.email}, Password: ${event.password}');
 
         try {
@@ -33,7 +36,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     });
   }
 }
-class ErrorState extends RegisterState {
+class ErrorState extends LoginState {
   final String errorMessage;
 
   ErrorState({required this.errorMessage});
