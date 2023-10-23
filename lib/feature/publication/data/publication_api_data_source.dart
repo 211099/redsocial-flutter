@@ -25,7 +25,7 @@ class PublicationApiDataSourceImp implements PublicationApiDataSource {
 
     request.fields['idUser'] = idUser;
     request.fields['description'] = description;
-
+  
     // Manejando el 'urlFile' que puede ser un File o una String.
     if (urlFile is File) {
       // Si es un archivo, crea un MultipartFile directamente.
@@ -222,3 +222,5 @@ class PublicationApiDataSourceImp implements PublicationApiDataSource {
     }
   }
 }
+
+
