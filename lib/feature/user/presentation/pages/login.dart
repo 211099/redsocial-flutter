@@ -120,21 +120,7 @@ class Login extends StatelessWidget {
                     SizedBox(height: 10),
                     registerButton,
                     SizedBox(height: 20),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => RestorePassword()),
-                        );
-                      },
-                      child: Text(
-                        'Restore Password',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
+
                   ],
                 ),
               ],
