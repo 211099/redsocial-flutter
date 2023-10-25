@@ -1,3 +1,4 @@
+import 'package:actividad1c2/feature/publication/data/publication_api_data_source.dart';
 import 'package:actividad1c2/feature/publication/domain/publication.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
@@ -35,7 +36,7 @@ class PublicationWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(height: 20),
-        HeaderPublication(userName: publication.userName, userNickName: publication.userNickName),
+        HeaderPublication(userName: publication.userName, userNickName: publication.userNickName, idUser: publication.idUser, uuid: publication.uuid),
         MainPublication(description: publication.description, urlFile: publication.urlFile, typeFile: publication.typeFile),
         _FooterPublication(), // Si _FooterPublication necesita datos, considera pasárselos como parámetros también.
       ],
@@ -43,57 +44,148 @@ class PublicationWidget extends StatelessWidget {
   }
 }
 
-class HeaderPublication extends StatelessWidget {
+
+
+class HeaderPublication extends StatefulWidget {
   final String userName;
   final String userNickName;
+  final String idUser;
+  final String uuid;
 
   const HeaderPublication({
     Key? key,
     required this.userName,
-    required this.userNickName
+    required this.userNickName,
+    required this.idUser,
+    required this.uuid,
   }) : super(key: key);
 
   @override
+  _HeaderPublicationState createState() => _HeaderPublicationState();
+}
+
+class _HeaderPublicationState extends State<HeaderPublication> {
+
+  Future<void> _showEditDialog() async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => TextInputDialog(),
+    );
+    if (result != null) {
+      await PublicationApiDataSourceImp().updateDescription(widget.uuid, result);
+      print("Resultado del diálogo: $result");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print(widget.idUser); // Usa 'widget.' para acceder a las variables de instancia del widget
+
     return Container(
-      height: 70, 
-  
+      height: 70,
       padding: const EdgeInsets.all(8.0),
-      decoration: const BoxDecoration( // Quité const de aquí porque BoxDecoration no es constante.
-          color: Color.fromARGB(255, 217, 217, 217),
-          borderRadius: BorderRadius.only(
-              topRight: Radius.circular(10), topLeft: Radius.circular(10))),
-      child: Row( // Quité const de aquí porque los hijos de este Row no son constantes.
+      decoration: BoxDecoration(
+        color: Color.fromARGB(255, 217, 217, 217),
+        borderRadius: BorderRadius.only(
+            topRight: Radius.circular(10), topLeft: Radius.circular(10)),
+      ),
+      child: Row(
         children: <Widget>[
           const CircleAvatar(
-            // Suponiendo que obtienes una imagen de internet
             backgroundImage: NetworkImage(
                 'https://yesno.wtf/assets/yes/10-271c872c91cd72c1e38e72d2f8eda676.gif'),
-            radius: 25, // define el tamaño del CircleAvatar
+            radius: 25,
           ),
-          SizedBox(width: 10), // Para el espacio entre la imagen y los textos
+          SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                userName, // Usamos la variable no constante aquí.
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16), // Hacer el texto más grande para el nombre de usuario
+                widget.userName, // 'widget.' se utiliza para acceder a las variables del StatefulWidget
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Text(
-                userNickName, // Usamos la variable no constante aquí.
-                style: const TextStyle(
-                    fontSize: 14), // Texto más pequeño para el nombre completo
+                widget.userNickName,
+                style: const TextStyle(fontSize: 14),
               ),
             ],
           ),
+          Spacer(), // para empujar los botones hacia la derecha
+          if (widget.idUser == '48ef33e0-5e5e-4471-b763-b32ed4cf1b04') ...[
+            TextButton(
+              onPressed: () {
+                _showEditDialog();
+                print("Modificar");
+              },
+              child: Text("Modificar"),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Lógica para "Eliminar".
+                await PublicationApiDataSourceImp().deletePublication(widget.uuid);
+                setState(() {
+                  // Si necesitas actualizar la UI después de eliminar una publicación, hazlo aquí.
+                });
+                print("Eliminar");
+              },
+              child: Text("Eliminar"),
+            ),
+          ]
         ],
       ),
     );
   }
 }
+
+
+
+class TextInputDialog extends StatefulWidget {
+  const TextInputDialog({Key? key}) : super(key: key);
+
+  @override
+  _TextInputDialogState createState() => _TextInputDialogState();
+}
+
+class _TextInputDialogState extends State<TextInputDialog> {
+  final _textEditingController = TextEditingController();
+
+  @override
+  void dispose() {
+    _textEditingController.dispose();
+    super.dispose();
+  }
+
+  void _sendText() {
+    // Aquí puedes manejar el texto ingresado, por ejemplo, enviarlo a alguna API o algo similar.
+    Navigator.of(context).pop(_textEditingController.text); // Cierra el diálogo y devuelve el texto.
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Editar Publicación'),
+      content: TextField(
+        controller: _textEditingController,
+        autofocus: true, // para que el teclado aparezca automáticamente
+        decoration: InputDecoration(hintText: "Ingrese su texto aquí..."),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(), // Cierra el diálogo sin enviar datos.
+          child: Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: _sendText, // Llamada al método que maneja el envío de datos.
+          child: Text('Enviar'),
+        ),
+      ],
+    );
+  }
+}
+
+
+
 
 
 class MainPublication extends StatelessWidget {
@@ -121,7 +213,7 @@ class MainPublication extends StatelessWidget {
       return _VideoBubble(videoUrl: url);
     } else {
       // Si no es ninguno de los tipos conocidos, puedes manejarlo adecuadamente, tal vez mostrando un mensaje de error o un contenedor vacío.
-      return SizedBox.shrink(); // O puedes retornar un widget de error personalizado.
+      return SizedBox(); // O puedes retornar un widget de error personalizado.
     }
   }
 
@@ -379,27 +471,42 @@ class _AudioBubbleState extends State<_AudioBubble> {
 class CommentsBottomSheet extends StatelessWidget {
   // Lista de comentarios con más detalles. Esto normalmente vendría de una base de datos.
   final List<Comment> comments = [
-    Comment(username: 'Usuario1', userImageUrl: 'https://assetsio.reedpopcdn.com/halo-infinite-analisis-1638743381631.jpg?width=1920&height=1920&fit=bounds&quality=80&format=jpg&auto=webp', text: '¡Gran publicación!'),
+    Comment(username: 'Usuario1', userImageUrl: 'https://example.com/path/to/image.jpg', text: '¡Gran publicación!'),
     // ... otros comentarios ...
   ];
 
-  @override
+   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Comentarios',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          // Usamos un Row para colocar los widgets en una línea horizontal.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Esto alinea los elementos en el espacio disponible.
+            children: [
+              // Tu texto existente está aquí, alineado a la izquierda.
+              Text(
+                'Comentarios',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              // Un botón de texto sencillo, sin estilo, alineado a la derecha.
+              TextButton(
+                onPressed: () {
+                  // Aquí va la lógica de lo que debería hacer el botón al presionarse.
+                  // Por ejemplo, podrías abrir un cuadro de diálogo o una nueva pantalla de formulario para comentarios.
+                },
+                child: Text('Comentar'), // El texto del botón.
+              ),
+            ],
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 10), // Espacio entre tu encabezado y la lista.
           Expanded(
             child: ListView.builder(
               itemCount: comments.length,
               itemBuilder: (context, index) {
-                return CommentCard(comment: comments[index]);
+                return CommentCard(comment: comments[index]); // Asume que ya tienes un widget 'CommentCard'.
               },
             ),
           ),
@@ -438,11 +545,11 @@ class CommentCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Text(comment.username, style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(comment.text),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -451,14 +558,14 @@ class CommentCard extends StatelessWidget {
                   onPressed: () {
                     // Lógica para editar
                   },
-                  child: Text('Editar'),
+                  child: const Text('Editar'),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 TextButton(
                   onPressed: () {
                     // Lógica para eliminar
                   },
-                  child: Text('Eliminar'),
+                  child: const Text('Eliminar'),
                 ),
               ],
             ),

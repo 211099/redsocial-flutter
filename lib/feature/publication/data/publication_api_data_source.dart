@@ -17,61 +17,68 @@ abstract class PublicationApiDataSource {
 
 class PublicationApiDataSourceImp implements PublicationApiDataSource {
   @override
-  Future<void> createPublication(String idUser, String description, dynamic urlFile) async {
+  Future<void> createPublication(
+      String idUser, String description, dynamic urlFile) async {
     try {
-    var headers = {
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiZDZlNGJlNTYtZDk4MC00YTE5LWE5NjAtZDNhY2ZjNzdjMThmIiwiZW1haWwiOiJqdWFuMTJAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTgwODc1MjQsImV4cCI6MTY5ODM1MzkyNH0.2YW_ueR2faKIeHJfYshh13JNrL241cfYefEKeAYZXDE', // Coloca aquí tu token actual
-    };
+      var headers = {
+        'Authorization':
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiZDZlNGJlNTYtZDk4MC00YTE5LWE5NjAtZDNhY2ZjNzdjMThmIiwiZW1haWwiOiJqdWFuMTJAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTgwODc1MjQsImV4cCI6MTY5ODM1MzkyNH0.2YW_ueR2faKIeHJfYshh13JNrL241cfYefEKeAYZXDE', // Coloca aquí tu token actual
+      };
 
-    var request = http.MultipartRequest('POST', Uri.parse('https://actual-servant-production.up.railway.app/api/v1/public/create'));
+      var request = http.MultipartRequest(
+          'POST',
+          Uri.parse(
+              'https://actual-servant-production.up.railway.app/api/v1/public/create'));
 
-    request.fields.addAll({
-      'idUser': idUser, // esto toma el valor de idUser que se pasa a la función
-      'description': description, // esto toma el valor de description que se pasa a la función
-    });
+      request.fields.addAll({
+        'idUser':
+            idUser, // esto toma el valor de idUser que se pasa a la función
+        'description':
+            description, // esto toma el valor de description que se pasa a la función
+      });
 
-    // Adjunta el archivo. filePath debe ser la ruta del archivo en el dispositivo.
-    request.files.add(await http.MultipartFile.fromPath('url_file', urlFile));
+      // Adjunta el archivo. filePath debe ser la ruta del archivo en el dispositivo.
+      request.files.add(await http.MultipartFile.fromPath('url_file', urlFile));
 
-    request.headers.addAll(headers);
+      request.headers.addAll(headers);
 
-    http.StreamedResponse response = await request.send();
+      http.StreamedResponse response = await request.send();
 
-    if (response.statusCode == 200) {
-      print(await response.stream.bytesToString());
-    } else {
-      print(response.reasonPhrase);
+      if (response.statusCode == 200) {
+        print(await response.stream.bytesToString());
+      } else {
+        print(response.reasonPhrase);
+      }
+    } catch (e) {
+      // Manejar la excepción adecuadamente
+      print(e);
     }
-  } catch (e) {
-    // Manejar la excepción adecuadamente
-    print(e);
-  }
   }
 
   @override
   Future<void> deletePublication(String uuid) async {
-    // Crear el URI utilizando el 'uuid' proporcionado.
-    var uri = Uri.parse('http://localhost:3001/api/v1/public/delete/$uuid');
+    var headers = {
+      'Authorization':
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s'
+    };
 
-    // Crear la solicitud DELETE.
-    var request = http.Request('DELETE', uri);
+    var url = Uri.parse(
+        'https://actual-servant-production.up.railway.app/api/v1/public/delete/$uuid'); // Asegúrate de que tu endpoint puede manejar la variable uuid.
 
+    // Usando un try-catch para manejar posibles errores durante la solicitud.
     try {
-      // Enviar la solicitud y esperar la respuesta.
-      http.StreamedResponse response = await request.send();
+      var response = await http.delete(url, headers: headers);
 
-      // Verificar si la respuesta fue exitosa.
       if (response.statusCode == 200) {
-        // print(await response.stream.bytesToString());
+        print('Publicación eliminada con éxito. Respuesta: ${response.body}');
       } else {
-        // Si el servidor responde con un código de error, se lanza una excepción.
-        throw Exception(
-            'Error al eliminar la publicación: ${response.reasonPhrase}');
+        print(
+            'Error al eliminar la publicación. Estado: ${response.statusCode}. Razón: ${response.reasonPhrase}');
       }
     } catch (e) {
-      // Capturar y manejar o reenviar cualquier excepción que ocurra durante la solicitud.
-      // print(e.toString());
-      throw Exception('Error durante la eliminación de la publicación: $e');
+      // Esto atrapará cualquier otra excepción que pueda ocurrir.
+      // Puedes manejarlo de manera diferente, dependiendo de tus necesidades.
+      print('Ocurrió un error al enviar la solicitud: $e');
     }
   }
 
@@ -143,64 +150,70 @@ class PublicationApiDataSourceImp implements PublicationApiDataSource {
     }
   }
 
- @override
-Future<List<Publication>> listPublication() async {
-  var headers = {
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiZDZlNGJlNTYtZDk4MC00YTE5LWE5NjAtZDNhY2ZjNzdjMThmIiwiZW1haWwiOiJqdWFuMTJAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTgwODc1MjQsImV4cCI6MTY5ODM1MzkyNH0.2YW_ueR2faKIeHJfYshh13JNrL241cfYefEKeAYZXDE' 
-  };
-  print("entre a listar");
-  var response = await http.get(
-    Uri.parse('https://actual-servant-production.up.railway.app/api/v1/public/all'),
-    headers: headers,
-  );
+  @override
+  Future<List<Publication>> listPublication() async {
+    var headers = {
+      'Authorization':
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiZDZlNGJlNTYtZDk4MC00YTE5LWE5NjAtZDNhY2ZjNzdjMThmIiwiZW1haWwiOiJqdWFuMTJAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTgwODc1MjQsImV4cCI6MTY5ODM1MzkyNH0.2YW_ueR2faKIeHJfYshh13JNrL241cfYefEKeAYZXDE'
+    };
+    print("entre a listar");
+    var response = await http.get(
+      Uri.parse(
+          'https://actual-servant-production.up.railway.app/api/v1/public/all'),
+      headers: headers,
+    );
 
-  if (response.statusCode == 200) {
-  // Decodifica la respuesta JSON
-  Map<String, dynamic> jsonData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      // Decodifica la respuesta JSON
+      Map<String, dynamic> jsonData = jsonDecode(response.body);
 
-  // Accede al campo 'data' y luego al campo 'list' que contiene las publicaciones
-  List<dynamic> publicationsList = jsonData['data']['list'];
+      // Accede al campo 'data' y luego al campo 'list' que contiene las publicaciones
+      List<dynamic> publicationsList = jsonData['data']['list'];
 
-  // Convierte cada elemento en la lista a un objeto 'Publication'.
-  List<Publication> publications = publicationsList.map((dynamic item) => PublicationModel.fromJson(item)).toList();
+      // Convierte cada elemento en la lista a un objeto 'Publication'.
+      List<Publication> publications = publicationsList
+          .map((dynamic item) => PublicationModel.fromJson(item))
+          .toList();
 
-  return publications;
-} else {
-  throw Exception('Failed to load publications from API');
-}
-
-}
-
+      return publications;
+    } else {
+      throw Exception('Failed to load publications from API');
+    }
+  }
 
   @override
   Future<void> updateDescription(String uuid, String description) async {
-    var headers = {'Content-Type': 'application/json'};
-    var body = json.encode({"uuid": uuid, "description": description});
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiZDZlNGJlNTYtZDk4MC00YTE5LWE5NjAtZDNhY2ZjNzdjMThmIiwiZW1haWwiOiJqdWFuMTJAZXhhbXBsZS5jb20iLCJpYXQiOjE2OTgwODc1MjQsImV4cCI6MTY5ODM1MzkyNH0.2YW_ueR2faKIeHJfYshh13JNrL241cfYefEKeAYZXDE', // reemplaza con tu token real
+    };
+
+    var request = http.Request(
+        'PUT', Uri.parse('https://actual-servant-production.up.railway.app/api/v1/public/description'));
+
+    // Asegúrate de que el cuerpo de la solicitud contenga los campos que espera tu API.
+    var body = json.encode({
+      "uuid": uuid,
+      "description": description,
+    });
+
+    request.body = body;
+    request.headers.addAll(headers);
 
     try {
-      // Crear la solicitud PUT
-      var request = http.Request(
-          'PUT', Uri.parse('http://localhost:3001/api/v1/public/description'));
-      request.body = body;
-      request.headers.addAll(headers);
-
-      // Enviar la solicitud y esperar una respuesta
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200) {
-        // La solicitud fue exitosa, imprimir o procesar la respuesta aquí si es necesario
-        // print(await response.stream.bytesToString());
+        print(await response.stream.bytesToString());
       } else {
-        // El servidor respondió con un error, puedes manejarlo o lanzar una excepción
-        throw Exception(
-            'Failed to update description. Status code: ${response.statusCode}, ${response.reasonPhrase}');
+        // Aquí puedes manejar errores de diferentes maneras, no solo imprimir
+        print(
+          'Error al actualizar la descripción: ${response.reasonPhrase}',
+        );
       }
     } catch (e) {
-      // Ocurrió un error al enviar la solicitud, imprimir o manejar el error aquí
-      // print(e.toString());
-      throw Exception('Error updating description: $e');
+      // Manejo de errores de red, etc.
+      print('Error al realizar la solicitud: $e');
     }
   }
 }
-
-

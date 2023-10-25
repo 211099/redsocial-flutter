@@ -164,22 +164,54 @@ class _CardFooterState extends State<CardFooter> {
     });
   }
 
-  void _sendInformation()  async {
-    // El mismo método para enviar o procesar la información.
-    print(widget.controller.text);
-    if (selectedFile != null && typeFile != null) {
-      // Se imprime la información correspondiente según el tipo de archivo.
-      print('Archivo seleccionado: ${selectedFile!.path}, Tipo de archivo: ${typeFile == 0 ? 'Imagen' : typeFile == 1 ? 'Video' : 'Audio'}');
-      try {
-        print('hola mundo');
-        await PublicationApiDataSourceImp().createPublication("48ef33e0-5e5e-4471-b763-b32ed4cf1b04", widget.controller.text, selectedFile!.path);
-      } catch (e) {
-        print(e);
-      }
-    } else {
-      print('No hay un archivo seleccionado.');
-    }
+    Future<String> _sendInformation() async {
+  // Extrae el texto que el usuario ha ingresado. Este puede ser el cuerpo de la publicación.
+  String textContent = widget.controller.text;
+
+  // Comprueba si el usuario ha escrito algo o seleccionado un archivo. Si no, devuelve un mensaje de error.
+  if (textContent.trim().isEmpty && selectedFile == null) {
+    // No hay texto ni archivo adjunto; se devuelve un mensaje de error.
+    return 'Por favor, añade texto o selecciona un archivo para tu publicación.';
   }
+
+  try {
+    // Si hay texto o un archivo (o ambos), continúa con el proceso.
+    if (selectedFile != null && typeFile != null) {
+      // Un archivo fue seleccionado; procesa como lo harías normalmente.
+      print('Archivo seleccionado: ${selectedFile!.path}, Tipo de archivo: ${typeFile == 0 ? 'Imagen' : typeFile == 1 ? 'Video' : 'Audio'}');
+    } else {
+      // No hay archivo seleccionado, solo texto. Esto está bien si permites publicaciones de solo texto.
+      print('Preparando para enviar una publicación de texto.');
+    }
+
+    print('Enviando publicación...');
+    // Aquí, intenta enviar la información. La función se supone que maneja valores nulos para la ruta del archivo.
+    if (selectedFile?.path == null) {
+      await PublicationApiDataSourceImp().createPublication(
+      "48ef33e0-5e5e-4471-b763-b32ed4cf1b04", 
+      textContent, 
+      ""  // Esto es null si no hay archivo seleccionado.
+    );
+    }else{
+       await PublicationApiDataSourceImp().createPublication(
+      "48ef33e0-5e5e-4471-b763-b32ed4cf1b04", 
+      textContent, 
+      selectedFile?.path  // Esto es null si no hay archivo seleccionado.
+    );
+    }
+
+   
+    print('Publicación enviada.');
+
+    // Si todo sale bien, devuelve una respuesta positiva.
+    return 'Publicación enviada con éxito.';
+  } catch (e) {
+    print('Ocurrió un error al enviar la publicación: $e');
+    // Si ocurre una excepción, devuelve un mensaje de error.
+    return 'Error al enviar la publicación: $e';
+  }
+}
+
 
  @override
 Widget build(BuildContext context) {
