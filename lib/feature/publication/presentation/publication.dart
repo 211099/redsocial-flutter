@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:actividad1c2/feature/publication/data/publication_api_data_source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -163,12 +164,18 @@ class _CardFooterState extends State<CardFooter> {
     });
   }
 
-  void _sendInformation() {
+  void _sendInformation()  async {
     // El mismo método para enviar o procesar la información.
     print(widget.controller.text);
     if (selectedFile != null && typeFile != null) {
       // Se imprime la información correspondiente según el tipo de archivo.
       print('Archivo seleccionado: ${selectedFile!.path}, Tipo de archivo: ${typeFile == 0 ? 'Imagen' : typeFile == 1 ? 'Video' : 'Audio'}');
+      try {
+        print('hola mundo');
+        await PublicationApiDataSourceImp().createPublication("48ef33e0-5e5e-4471-b763-b32ed4cf1b04", widget.controller.text, selectedFile!.path);
+      } catch (e) {
+        print(e);
+      }
     } else {
       print('No hay un archivo seleccionado.');
     }

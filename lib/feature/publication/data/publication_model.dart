@@ -6,11 +6,17 @@ class PublicationModel extends Publication {
     required String idUser, 
     required String description, 
     required dynamic urlFile,
+    required String typeFile,
+    required String userName,
+    required String userNickName
     }) : super (
       uuid: uuid,
       idUser: idUser,
       description: description,
       urlFile: urlFile,
+      typeFile: typeFile,
+      userName: userName,
+      userNickName: userNickName
     );
 
     factory PublicationModel.fromJson(Map<String,dynamic> json) {
@@ -18,7 +24,10 @@ class PublicationModel extends Publication {
         uuid: json['uuid'],
         idUser: json['idUser'],
         description: json['description'],
-        urlFile: json['img_file']
+        urlFile: json['img_file'],
+        typeFile: json['type_file'],
+        userName: json["userName"],
+        userNickName: json["userNickName"]
       );
     }
 
@@ -27,7 +36,10 @@ class PublicationModel extends Publication {
         uuid: publication.uuid,
         idUser: publication.idUser,
         description: publication.description,
-        urlFile: publication.urlFile
+        urlFile: publication.urlFile,
+        typeFile: publication.typeFile,
+        userName: publication.userName,
+        userNickName: publication.userNickName
       );
     }
 
@@ -36,7 +48,10 @@ class PublicationModel extends Publication {
         'uuid': uuid,
         'idUser': idUser,
         'description': description,
-        'img_file': urlFile
+        'img_file': urlFile,
+        'type_file': typeFile,
+        'userName': userName,
+        "userNickName": userNickName,
       };
     }
   
