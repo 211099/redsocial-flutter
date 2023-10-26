@@ -206,11 +206,12 @@ class _CardFooterState extends State<CardFooter> {
 
     try {
       print('Enviando publicación...');
-      if (selectedFile?.path == null) {
-        await PublicationApiDataSourceImp()
+      if (selectedFile?.path == "") {
+        print("sin texto");
+        await PublicationApiDataSourceImp(context: context)
             .createPublication(uuidUser, textContent, "");
       } else {
-        await PublicationApiDataSourceImp().createPublication(
+        await PublicationApiDataSourceImp(context: context).createPublication(
             uuidUser,
             textContent,
             selectedFile?.path // Esto es null si no hay archivo seleccionado.

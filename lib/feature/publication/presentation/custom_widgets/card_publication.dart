@@ -86,7 +86,7 @@ class _HeaderPublicationState extends State<HeaderPublication> {
       builder: (context) => TextInputEditPublication(),
     );
     if (result != null) {
-      await PublicationApiDataSourceImp()
+      await PublicationApiDataSourceImp(context: context)
           .updateDescription(widget.uuid, result);
       print("Resultado del diálogo: $result");
     }
@@ -141,7 +141,7 @@ class _HeaderPublicationState extends State<HeaderPublication> {
             TextButton(
               onPressed: () async {
                 // Lógica para "Eliminar".
-                await PublicationApiDataSourceImp()
+                await PublicationApiDataSourceImp(context: context)
                     .deletePublication(widget.uuid);
                 setState(() {
                   // Si necesitas actualizar la UI después de eliminar una publicación, hazlo aquí.

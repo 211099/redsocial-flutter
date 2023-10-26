@@ -19,7 +19,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    futurePublications = PublicationApiDataSourceImp().listPublication();
+    futurePublications = PublicationApiDataSourceImp(context: context).listPublication();
   }
 
   @override
@@ -48,7 +48,7 @@ class _ChatViewState extends State<ChatView> {
   @override
   void initState() {
     super.initState();
-    futurePublications = PublicationApiDataSourceImp().listPublication();
+    futurePublications = PublicationApiDataSourceImp(context: context).listPublication();
   }
 
   @override

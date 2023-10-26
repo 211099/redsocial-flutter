@@ -3,8 +3,12 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:actividad1c2/feature/publication/data/publication_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../domain/publication.dart';
+
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
 
 abstract class PublicationApiDataSource {
   Future<List<Publication>> listPublication();
@@ -17,6 +21,9 @@ abstract class PublicationApiDataSource {
 }
 
 class PublicationApiDataSourceImp implements PublicationApiDataSource {
+  late final BuildContext context;
+
+  PublicationApiDataSourceImp({required this.context});
   @override
   Future<void> createPublication(
       String idUser, String description, dynamic urlFile) async {
@@ -36,24 +43,26 @@ class PublicationApiDataSourceImp implements PublicationApiDataSource {
           Uri.parse(
               'https://actual-servant-production.up.railway.app/api/v1/public/create'));
 
-      request.fields.addAll({
-        'idUser':
-            idUser, // esto toma el valor de idUser que se pasa a la función
-        'description':
-            description, // esto toma el valor de description que se pasa a la función
-      });
+        request.fields.addAll({
+      'idUser': idUser,
+      'description': description,
+      'url_file': urlFile != null ? urlFile : "", // Utiliza urlFile si no es nulo, de lo contrario, usa una cadena vacía
+    });
 
-      // Adjunta el archivo. filePath debe ser la ruta del archivo en el dispositivo.
+    if (urlFile != null) {
       request.files.add(await http.MultipartFile.fromPath('url_file', urlFile));
+    }
 
       request.headers.addAll(headers);
 
       http.StreamedResponse response = await request.send();
 
       if (response.statusCode == 200) {
+        
         print(await response.stream.bytesToString());
         
       } else {
+        Navigator.pushReplacementNamed(context, '/Home');
         print(response.reasonPhrase);
       }
     } catch (e) {
