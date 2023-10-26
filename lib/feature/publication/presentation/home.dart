@@ -29,6 +29,8 @@ class _Home extends State<Home> {
   }
 }
 
+
+
 class ChatView extends StatefulWidget {
   @override
   _ChatViewState createState() => _ChatViewState();
@@ -111,6 +113,8 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 }
+
+
 
 class Navbar extends StatefulWidget {
   const Navbar({Key? key}) : super(key: key);

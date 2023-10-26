@@ -35,6 +35,8 @@ class PublicationScreen extends StatelessWidget {
 class CustomCard extends StatelessWidget {
   final TextEditingController _controller = TextEditingController();
 
+  CustomCard({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Padding(

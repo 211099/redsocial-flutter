@@ -44,6 +44,7 @@ class _TextInputEditPublicationState extends State<TextInputEditPublication> {
   }
 }
 
+
 class TextInputAddComment extends StatefulWidget {
   const TextInputAddComment({Key? key,}) : super(key: key);
 
@@ -68,7 +69,7 @@ class _TextInputAddCommentState extends State<TextInputAddComment> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Agregar comentario'),
+      title: const Text('Agrega comentario'),
       content: TextField(
         controller: _textEditingController,
         autofocus: true, // para que el teclado aparezca automáticamente
