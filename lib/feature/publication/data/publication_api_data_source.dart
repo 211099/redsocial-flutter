@@ -83,7 +83,7 @@ class PublicationApiDataSourceImp implements PublicationApiDataSource {
   }
 
   @override
-  Future<Publication> getPublicationByUser(String name) async {
+  Future<Publication> getPublicationByUser(String name) async {//no se usa 
     // Construir el URI usando el nombre proporcionado
     var uri = Uri.parse('http://localhost:3001/api/v1/public/user/$name');
 
@@ -117,7 +117,7 @@ class PublicationApiDataSourceImp implements PublicationApiDataSource {
   }
 
   @override
-  Future<Publication> getPublicationByUuid(String uuid) async {
+  Future<Publication> getPublicationByUuid(String uuid) async {//no se usa 
     // Construir el URI usando el UUID proporcionado
     var uri = Uri.parse('http://localhost:3001/api/v1/public/$uuid');
 

@@ -14,129 +14,127 @@ abstract class CommentApiDataSource {
 class CommentApiDataSourceImp implements CommentApiDataSource {
   @override
   Future<void> createComment(String idUser, String idPublic, String text) async{
-      var headers = {'Content-Type': 'application/json'};
-    var body = json.encode({
-      "id_user": idUser,
-      "id_public": idPublic,
-      "text": text
-    });
+   var headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s'
+  };
 
-    try {
-      // Preparar y enviar la solicitud POST
-      var request = http.Request('POST', Uri.parse('http://localhost:3001/api/v1/comment/create'));
-      request.body = body;
-      request.headers.addAll(headers);
+  var request = http.Request('POST', Uri.parse('https://actual-servant-production.up.railway.app/api/v1/comment/create'));
+  request.body = json.encode({
+    "id_user": idUser,
+    "id_public": idPublic,
+    "text": text
+  });
+  request.headers.addAll(headers);
 
-      // Enviar la solicitud y esperar una respuesta
-      http.StreamedResponse response = await request.send();
+  try {
+    http.StreamedResponse response = await request.send();
 
-      // Procesar la respuesta
-      if (response.statusCode == 200) {
-        // Solicitud exitosa, puedes procesar la respuesta aquí, si lo deseas
-        // print(await response.stream.bytesToString());
-      } else {
-        // La respuesta indica un error, puedes manejarlo o lanzar una excepción
-        throw Exception('Failed to create comment. Status code: ${response.statusCode}, ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      // Ocurrió un error al enviar la solicitud, puedes manejar el error aquí o lanzar una excepción
-      // print(e.toString());
-      throw Exception('Error creating comment: $e');
+    if (response.statusCode == 200) {
+      print(await response.stream.bytesToString());
+    } else {
+      // Imprimir solo la razón del error puede no ser muy informativo, considera manejar diferentes códigos de estado
+      print(response.reasonPhrase);
     }
+  } catch (e) {
+    // Manejar cualquier excepción que ocurra durante la solicitud
+    // Podrías manejar diferentes tipos de errores (como timeouts, falta de conexión a internet, etc.) de manera más específica
+    print(e);
+    // Aquí podrías lanzar la excepción de nuevo, o manejarla según sea necesario para tu aplicación
+    // throw e; 
+  }
   }
 
   @override
   Future<void> deletecomment(String uuid) async{
-   try {
-      // Preparar la solicitud DELETE
-      var request = http.Request('DELETE', Uri.parse('http://localhost:3001/api/v1/comment/delete/$uuid'));
+    var headers = {
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s'
+  };
 
-      // Enviar la solicitud y esperar una respuesta
-      http.StreamedResponse response = await request.send();
+  var request = http.Request('DELETE', Uri.parse('https://actual-servant-production.up.railway.app/api/v1/comment/delete/$uuid'));
 
-      // Procesar la respuesta
-      if (response.statusCode == 200) {
-        // Solicitud exitosa, imprimir la respuesta o realizar otras acciones según sea necesario
-        // print(await response.stream.bytesToString());
-      } else {
-        // Si la solicitud falló, imprimir la razón y/o manejar el error de acuerdo a la lógica de tu aplicación
-        // print(response.reasonPhrase);
-        throw Exception('Failed to delete comment. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      // Manejar o imprimir errores generales durante la solicitud
-      // print(e.toString());
-      throw Exception('Error deleting comment: $e');
+  request.headers.addAll(headers);
+
+  try {
+    http.StreamedResponse response = await request.send();
+
+    if (response.statusCode == 200) {
+      print(await response.stream.bytesToString());
+    } else {
+      // Imprimir solo la razón del error puede no ser muy informativo. Considera manejar diferentes códigos de estado.
+      print(response.reasonPhrase);
     }
+  } catch (e) {
+    // Manejar cualquier excepción que ocurra durante la solicitud.
+    print(e);
+    // Dependiendo de tu flujo de control, podrías optar por lanzar la excepción de nuevo o manejarla de otra manera.
+  }
   }
 
   @override
   Future<List<Comment>> getCommentsByPublic(String uuid) async{
-     try {
-      // Preparar la solicitud GET
-      var request = http.Request('GET', Uri.parse('http://localhost:3001/api/v1/comment/$uuid'));
+     var url = Uri.parse('https://actual-servant-production.up.railway.app/api/v1/comment/$uuid');
+    var headers = {
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s' // Reemplaza con tu token real
+    };
+  print(uuid);
+    try {
 
-      // Enviar la solicitud y esperar una respuesta
-      http.StreamedResponse response = await request.send();
+      var response = await http.get(url, headers: headers);
 
-      // Procesar la respuesta
       if (response.statusCode == 200) {
-        String responseBody = await response.stream.bytesToString();
-        // Convertir el cuerpo de la respuesta en JSON
-        List<dynamic> data = jsonDecode(responseBody);
-        
-        // Crear una lista de comentarios a partir de la respuesta JSON
-        List<Comment> comments = data.map((dynamic item) => CommenModel.fromJson(item)).toList();
+        Map<String, dynamic> jsonData = jsonDecode(response.body);
+
+        // Accede al campo 'data' y luego al campo 'list' que contiene las publicaciones
+        List<dynamic> commentList = jsonData['data'];
+
+
+        // Convierte el cuerpo de la respuesta en una lista de comentarios.
+        List<Comment> comments = commentList
+            .map(
+              (dynamic item) => CommenModel.fromJson(item),
+            )
+            .toList();
 
         return comments;
       } else {
-        // Si la solicitud falló, imprimir la razón y/o manejar el error
-        // print(response.reasonPhrase);
-        throw Exception('Failed to load comments. Status code: ${response.statusCode}');
+        // Si el servidor no responde con un código de estado 200, se considera un error.
+        throw Exception('Failed to load comments: ${response.statusCode}');
       }
-    } catch (e) {
-      // Manejar o imprimir errores generales durante la solicitud
-      // print(e.toString());
-      throw Exception('Error getting comments: $e');
+    } catch (exception) {
+      // Cualquier excepción lanzada durante la solicitud o el procesamiento de la respuesta se capturará aquí.
+      rethrow;  // Puedes manejar el error aquí o simplemente lanzarlo para manejarlo en un nivel superior
     }
+
   }
 
   @override
   Future<void> updateComment(String uuid, String text) async{
-      // Crear encabezados para la solicitud HTTP
-    var headers = {
-      'Content-Type': 'application/json',
-    };
+     var headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s'
+  };
+  var body = jsonEncode({
+    "uuid": uuid,
+    "text": text
+  });
 
-    // Preparar el cuerpo de la solicitud con los datos a actualizar
-    var requestBody = json.encode({
-      "uuid": uuid,
-      "text": text,
-    });
+  var uri = Uri.parse('https://actual-servant-production.up.railway.app/api/v1/comment/update');
+  try {
+    var response = await http.put(uri, headers: headers, body: body);
 
-    try {
-      // Crear y enviar la solicitud PUT
-      var request = http.Request('PUT', Uri.parse('http://localhost:3001/api/v1/comment/update'));
-      request.body = requestBody;
-      request.headers.addAll(headers);
-
-      http.StreamedResponse response = await request.send();
-
-      // Verificar el estado de la respuesta
-      if (response.statusCode == 200) {
-        // Si es exitoso, puedes procesar la respuesta (si es necesario)
-        String responseBody = await response.stream.bytesToString();
-        print(responseBody); // Imprimir la respuesta o manejarla según sea necesario
-      } else {
-        // Si la solicitud falló, lanza un error
-        print(response.reasonPhrase);
-        throw Exception('Failed to update comment. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      // Manejar o imprimir cualquier error que ocurra durante la solicitud
-      print(e.toString());
-      throw Exception('Error updating comment: $e');
+    if (response.statusCode == 200) {
+      print('Comentario actualizado con éxito.');
+    } else {
+      // Si el servidor responde con un código de error, lanza un error.
+      print('Falló la actualización del comentario: ${response.reasonPhrase}');
+      throw Exception('Falló la actualización del comentario. Estado: ${response.statusCode}');
     }
+  } catch (error) {
+    // Si ocurre algún error durante la ejecución, lanza un error.
+    print('Error al actualizar el comentario: $error');
+    throw Exception('Error al actualizar el comentario: $error');
+  }
   }
   
 }

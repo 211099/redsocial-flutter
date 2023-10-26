@@ -35,8 +35,7 @@ class ChatView extends StatefulWidget {
 }
 
 class _ChatViewState extends State<ChatView> {
-  late Future<List<Publication>>
-      futurePublications; // Asume que `Publication` es la clase de tus publicaciones.
+  late Future<List<Publication>> futurePublications; // Asume que `Publication` es la clase de tus publicaciones.
 
   @override
   void initState() {
@@ -89,12 +88,10 @@ class _ChatViewState extends State<ChatView> {
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: ListView.builder(
-                        itemCount: publications
-                            .length, // La cantidad de publicaciones.
+                        itemCount: publications.length, // La cantidad de publicaciones.
                         itemBuilder: (context, index) {
-                          // Cada ítem de la lista es una 'PublicationWidget' para una publicación individual.
-                          Publication publication =
-                              publications[index]; // La publicación actual.
+                         
+                          Publication publication = publications[index]; // La publicación actual.
 
                           // Aquí es donde pasas la 'publication' completa al widget.
                           return PublicationWidget(

@@ -1,5 +1,8 @@
+import 'package:actividad1c2/feature/comment/data/comment_api_data_source.dart';
+import 'package:actividad1c2/feature/comment/model/comment.dart';
 import 'package:actividad1c2/feature/publication/data/publication_api_data_source.dart';
 import 'package:actividad1c2/feature/publication/domain/publication.dart';
+import 'package:actividad1c2/feature/publication/presentation/custom_widgets/modal_edit.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,18 +10,6 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:video_player/video_player.dart';
 
-
-class Comment {
-  final String username;
-  final String userImageUrl;
-  final String text;
-
-  Comment({
-    required this.username,
-    required this.userImageUrl,
-    required this.text,
-  });
-}
 
 
 class PublicationWidget extends StatelessWidget {
@@ -38,7 +29,7 @@ class PublicationWidget extends StatelessWidget {
         SizedBox(height: 20),
         HeaderPublication(userName: publication.userName, userNickName: publication.userNickName, idUser: publication.idUser, uuid: publication.uuid),
         MainPublication(description: publication.description, urlFile: publication.urlFile, typeFile: publication.typeFile),
-        _FooterPublication(), // Si _FooterPublication necesita datos, considera pasárselos como parámetros también.
+        _FooterPublication(uuid: publication.uuid), // Si _FooterPublication necesita datos, considera pasárselos como parámetros también.
       ],
     );
   }
@@ -69,7 +60,7 @@ class _HeaderPublicationState extends State<HeaderPublication> {
   Future<void> _showEditDialog() async {
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => TextInputDialog(),
+      builder: (context) => TextInputEditPublication(),
     );
     if (result != null) {
       await PublicationApiDataSourceImp().updateDescription(widget.uuid, result);
@@ -140,49 +131,6 @@ class _HeaderPublicationState extends State<HeaderPublication> {
 
 
 
-class TextInputDialog extends StatefulWidget {
-  const TextInputDialog({Key? key}) : super(key: key);
-
-  @override
-  _TextInputDialogState createState() => _TextInputDialogState();
-}
-
-class _TextInputDialogState extends State<TextInputDialog> {
-  final _textEditingController = TextEditingController();
-
-  @override
-  void dispose() {
-    _textEditingController.dispose();
-    super.dispose();
-  }
-
-  void _sendText() {
-    // Aquí puedes manejar el texto ingresado, por ejemplo, enviarlo a alguna API o algo similar.
-    Navigator.of(context).pop(_textEditingController.text); // Cierra el diálogo y devuelve el texto.
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Editar Publicación'),
-      content: TextField(
-        controller: _textEditingController,
-        autofocus: true, // para que el teclado aparezca automáticamente
-        decoration: InputDecoration(hintText: "Ingrese su texto aquí..."),
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(), // Cierra el diálogo sin enviar datos.
-          child: Text('Cancelar'),
-        ),
-        TextButton(
-          onPressed: _sendText, // Llamada al método que maneja el envío de datos.
-          child: Text('Enviar'),
-        ),
-      ],
-    );
-  }
-}
 
 
 
@@ -219,7 +167,9 @@ class MainPublication extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return Container(
+        width: double.infinity,
       color: const Color.fromARGB(255, 217, 217, 217),
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -240,21 +190,29 @@ class MainPublication extends StatelessWidget {
 }
 
 class _FooterPublication extends StatelessWidget {
-  const _FooterPublication({Key? key})
+  final String uuid;
+
+  const _FooterPublication({
+    Key? key,
+    required this.uuid
+    })
       : super(key: key);
 
   void _showCommentsSheet(BuildContext context) {
+    print('footer:');
+
+    print(uuid);
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
         return SizedBox(
            height: MediaQuery.of(context).size.height * 0.9,
-           child: CommentsBottomSheet(),
+           child: CommentsBottomSheet(uuidPublication: uuid,),
         );
       },
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -468,45 +426,81 @@ class _AudioBubbleState extends State<_AudioBubble> {
  
 }
 
-class CommentsBottomSheet extends StatelessWidget {
-  // Lista de comentarios con más detalles. Esto normalmente vendría de una base de datos.
-  final List<Comment> comments = [
-    Comment(username: 'Usuario1', userImageUrl: 'https://example.com/path/to/image.jpg', text: '¡Gran publicación!'),
-    // ... otros comentarios ...
-  ];
+class CommentsBottomSheet extends StatefulWidget {
+  final String uuidPublication;
 
-   @override
+  CommentsBottomSheet({Key? key, required this.uuidPublication}) : super(key: key);
+
+  @override
+  _CommentsBottomSheetState createState() => _CommentsBottomSheetState();
+}
+
+class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
+  late Future<List<Comment>> futureComments;
+
+  @override
+  void initState() {
+    super.initState();
+    // Asignamos la llamada al método que obtiene los comentarios a la variable futureComments
+    futureComments = CommentApiDataSourceImp().getCommentsByPublic(widget.uuidPublication);
+  }
+
+   Future<void> _showEditDialog() async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => TextInputAddComment(),
+    );
+    if (result != null) {
+      await CommentApiDataSourceImp().createComment("57fbf8ba-5f05-482b-a0a5-bed175035b87", widget.uuidPublication, result);
+      print("Resultado del diálogo: $result");
+    }
+  }
+  
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Usamos un Row para colocar los widgets en una línea horizontal.
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Esto alinea los elementos en el espacio disponible.
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Tu texto existente está aquí, alineado a la izquierda.
               Text(
                 'Comentarios',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              // Un botón de texto sencillo, sin estilo, alineado a la derecha.
               TextButton(
                 onPressed: () {
-                  // Aquí va la lógica de lo que debería hacer el botón al presionarse.
-                  // Por ejemplo, podrías abrir un cuadro de diálogo o una nueva pantalla de formulario para comentarios.
+                  _showEditDialog();
                 },
-                child: Text('Comentar'), // El texto del botón.
+                child: Text('Comentar'),
               ),
             ],
           ),
-          SizedBox(height: 10), // Espacio entre tu encabezado y la lista.
+          SizedBox(height: 10),
           Expanded(
-            child: ListView.builder(
-              itemCount: comments.length,
-              itemBuilder: (context, index) {
-                return CommentCard(comment: comments[index]); // Asume que ya tienes un widget 'CommentCard'.
+            child: FutureBuilder<List<Comment>>(
+              future: futureComments,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // Si aún estamos esperando los datos, mostramos un indicador de carga
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  // Si nos encontramos con algún error, mostramos un texto rojo de error
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  // Si los datos están vacíos, mostramos un mensaje
+                  return Center(child: Text('No hay comentarios aún.'));
+                } else {
+                  // Cuando tenemos datos, los mostramos en una lista
+                  return ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      return CommentCard(comment: snapshot.data![index]); // Asegúrate de que CommentCard acepte un Comment
+                    },
+                  );
+                }
               },
             ),
           ),
@@ -516,10 +510,27 @@ class CommentsBottomSheet extends StatelessWidget {
   }
 }
 
-class CommentCard extends StatelessWidget {
+
+class CommentCard extends StatefulWidget {
   final Comment comment;
 
   CommentCard({required this.comment});
+
+  @override
+  _CommentCardState createState() => _CommentCardState();
+}
+
+class _CommentCardState extends State<CommentCard> {
+  Future<void> _showEditDialog() async {
+    final result = await showDialog<String>(
+      context: context, // Ahora puedes referenciar 'context' directamente.
+      builder: (context) => TextInputEditComment(),
+    );
+    if (result != null) {
+      await CommentApiDataSourceImp().updateComment(widget.comment.uuid, result);
+      print("Resultado del diálogo: $result");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -540,30 +551,30 @@ class CommentCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: NetworkImage(comment.userImageUrl), // imagen desde URL
+                      image: NetworkImage("https://yesno.wtf/assets/yes10-271c872c91cd72c1e38e72d2f8eda676.gif"), // imagen desde URL
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text(comment.username, style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(widget.comment.userName, style: TextStyle(fontWeight: FontWeight.bold)), // Acceso a través de 'widget'.
               ],
             ),
             const SizedBox(height: 10),
-            Text(comment.text),
+            Text(widget.comment.text), // Acceso a través de 'widget'.
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
                   onPressed: () {
-                    // Lógica para editar
+                   _showEditDialog();
                   },
                   child: const Text('Editar'),
                 ),
                 const SizedBox(width: 10),
                 TextButton(
                   onPressed: () {
-                    // Lógica para eliminar
+                    CommentApiDataSourceImp().deletecomment(widget.comment.uuid); // Acceso a través de 'widget'.
                   },
                   child: const Text('Eliminar'),
                 ),
@@ -575,4 +586,3 @@ class CommentCard extends StatelessWidget {
     );
   }
 }
-
