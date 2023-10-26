@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:actividad1c2/feature/publication/data/publication_api_data_source.dart';
+import 'package:actividad1c2/feature/publication/presentation/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -8,8 +9,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PublicationScreen extends StatelessWidget {
   const PublicationScreen({Key? key}) : super(key: key);
@@ -60,15 +60,39 @@ class CustomCard extends StatelessWidget {
 }
 
 class _CardHeader extends StatelessWidget {
+  // Método para cargar datos de SharedPreferences
+  Future<Map<String, String?>> _loadFromSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'name': prefs.getString('name'),
+      'nickName': prefs.getString('nick_name'),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: const Color.fromARGB(255, 217, 217, 217),
-        child: Icon(Icons.person, color: Colors.grey[700]),
-      ),
-      title: Text('Coffe'),
-      subtitle: Text('Luis Antonio Martinez Marroquin'),
+    return FutureBuilder<Map<String, String?>>(
+      future: _loadFromSharedPreferences(), // Tu función asincrónica
+      builder:
+          (BuildContext context, AsyncSnapshot<Map<String, String?>> snapshot) {
+        // Aquí simplemente verificamos si los datos están disponibles, sin manejar explícitamente el estado de error.
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.hasData) {
+          // Dado que estás seguro de que siempre habrá datos, puedes proceder a construir tu widget como lo harías normalmente.
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: const Color.fromARGB(255, 217, 217, 217),
+              child: Icon(Icons.person, color: Colors.grey[700]),
+            ),
+            // Utiliza los datos obtenidos de SharedPreferences
+            title: Text(snapshot.data!['nickName']!),
+            subtitle: Text(snapshot.data!['name']!),
+          );
+        } else {
+          // Mientras se cargan los datos, puedes mostrar un indicador de carga.
+          return Center(child: CircularProgressIndicator());
+        }
+      },
     );
   }
 }
@@ -96,7 +120,6 @@ class _CardBody extends StatelessWidget {
   }
 }
 
-
 class CardFooter extends StatefulWidget {
   final TextEditingController controller;
 
@@ -108,7 +131,8 @@ class CardFooter extends StatefulWidget {
 
 class _CardFooterState extends State<CardFooter> {
   File? selectedFile; // Este puede ser tu archivo de imagen, video o audio.
-  int? typeFile = null; // 0 para imagen, 1 para video, 2 para audio, null si no hay archivo.
+  int? typeFile =
+      null; // 0 para imagen, 1 para video, 2 para audio, null si no hay archivo.
 
   // Los métodos _pickImage y _pickVideo se mantienen igual.
   // Método para procesar la selección de imagen.
@@ -124,15 +148,15 @@ class _CardFooterState extends State<CardFooter> {
       selectedFile = null;
       typeFile = null;
     }
-     setState(() {
-    if (pickedFile != null) {
-      selectedFile = File(pickedFile.path);
-      typeFile = 0; // Imagen seleccionada.
-    } else {
-      selectedFile = null;
-      typeFile = null; // Ningún archivo seleccionado.
-    }
-  });
+    setState(() {
+      if (pickedFile != null) {
+        selectedFile = File(pickedFile.path);
+        typeFile = 0; // Imagen seleccionada.
+      } else {
+        selectedFile = null;
+        typeFile = null; // Ningún archivo seleccionado.
+      }
+    });
   }
 
   // Método para procesar la selección de video.
@@ -148,15 +172,15 @@ class _CardFooterState extends State<CardFooter> {
       selectedFile = null;
       typeFile = null;
     }
-      setState(() {
-    if (pickedFile != null) {
-      selectedFile = File(pickedFile.path);
-      typeFile = 1; // Video seleccionado.
-    } else {
-      selectedFile = null;
-      typeFile = null; // Ningún archivo seleccionado.
-    }
-  });
+    setState(() {
+      if (pickedFile != null) {
+        selectedFile = File(pickedFile.path);
+        typeFile = 1; // Video seleccionado.
+      } else {
+        selectedFile = null;
+        typeFile = null; // Ningún archivo seleccionado.
+      }
+    });
   }
 
   void _handleRecordedAudio(String filePath) {
@@ -166,103 +190,95 @@ class _CardFooterState extends State<CardFooter> {
     });
   }
 
-    Future<String> _sendInformation() async {
-  // Extrae el texto que el usuario ha ingresado. Este puede ser el cuerpo de la publicación.
-  String textContent = widget.controller.text;
+  Future<String> _sendInformation() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String textContent = widget.controller.text;
 
-  // Comprueba si el usuario ha escrito algo o seleccionado un archivo. Si no, devuelve un mensaje de error.
-  if (textContent.trim().isEmpty && selectedFile == null) {
-    // No hay texto ni archivo adjunto; se devuelve un mensaje de error.
-    return 'Por favor, añade texto o selecciona un archivo para tu publicación.';
-  }
+    String? uuidUser = prefs.getString('userId');
 
-  try {
-    // Si hay texto o un archivo (o ambos), continúa con el proceso.
-    if (selectedFile != null && typeFile != null) {
-      // Un archivo fue seleccionado; procesa como lo harías normalmente.
-      print('Archivo seleccionado: ${selectedFile!.path}, Tipo de archivo: ${typeFile == 0 ? 'Imagen' : typeFile == 1 ? 'Video' : 'Audio'}');
-    } else {
-      // No hay archivo seleccionado, solo texto. Esto está bien si permites publicaciones de solo texto.
-      print('Preparando para enviar una publicación de texto.');
+    if (uuidUser == null || uuidUser.isEmpty) {
+      print("No se pudo obtener el UUID del usuario.");
+      return 'Error: No se pudo obtener el UUID del usuario.';
+    }
+    if (textContent.trim().isEmpty && selectedFile == null) {
+      return 'Por favor, añade texto o selecciona un archivo para tu publicación.';
     }
 
-    print('Enviando publicación...');
-    // Aquí, intenta enviar la información. La función se supone que maneja valores nulos para la ruta del archivo.
-    if (selectedFile?.path == null) {
-      await PublicationApiDataSourceImp().createPublication(
-      "48ef33e0-5e5e-4471-b763-b32ed4cf1b04", 
-      textContent, 
-      ""  // Esto es null si no hay archivo seleccionado.
+    try {
+      print('Enviando publicación...');
+      if (selectedFile?.path == null) {
+        await PublicationApiDataSourceImp()
+            .createPublication(uuidUser, textContent, "");
+      } else {
+        await PublicationApiDataSourceImp().createPublication(
+            uuidUser,
+            textContent,
+            selectedFile?.path // Esto es null si no hay archivo seleccionado.
+            );
+      }
+
+      print('Publicación enviada.');
+
+      // Si todo sale bien, devuelve una respuesta positiva.
+      return 'Publicación enviada con éxito.';
+    } catch (e) {
+      print('Ocurrió un error al enviar la publicación: $e');
+      // Si ocurre una excepción, devuelve un mensaje de error.
+      return 'Error al enviar la publicación: $e';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Color getColor(int fileType) {
+      if (typeFile == fileType) {
+        return Colors
+            .green; // El color para indicar que el tipo de archivo ha sido seleccionado.
+      } else {
+        return Colors.black; // El color predeterminado.
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.image, size: 28),
+            onPressed: _pickImage, // Tu función existente.
+            color: getColor(0), // Color basado en el estado.
+          ),
+          RecordButton(
+            onSaved: _handleRecordedAudio, // Tu función existente.
+            color: getColor(
+                2), // Añade color aquí, pero necesitarás modificar la clase RecordButton para aceptar el valor de color también.
+          ),
+          IconButton(
+            icon: const Icon(Icons.videocam, size: 28),
+            onPressed: _pickVideo, // Tu función existente.
+            color: getColor(1), // Color basado en el estado.
+          ),
+          IconButton(
+            icon: const Icon(Icons.send, size: 28),
+            onPressed: _sendInformation, // Tu función existente.
+            color:
+                Colors.black, // Este podría permanecer igual ya que no cambia.
+          ),
+        ],
+      ),
     );
-    }else{
-       await PublicationApiDataSourceImp().createPublication(
-      "48ef33e0-5e5e-4471-b763-b32ed4cf1b04", 
-      textContent, 
-      selectedFile?.path  // Esto es null si no hay archivo seleccionado.
-    );
-    }
-
-   
-    print('Publicación enviada.');
-
-    // Si todo sale bien, devuelve una respuesta positiva.
-    return 'Publicación enviada con éxito.';
-  } catch (e) {
-    print('Ocurrió un error al enviar la publicación: $e');
-    // Si ocurre una excepción, devuelve un mensaje de error.
-    return 'Error al enviar la publicación: $e';
   }
-}
-
-
- @override
-Widget build(BuildContext context) {
-  Color getColor(int fileType) {
-    if (typeFile == fileType) {
-      return Colors.green; // El color para indicar que el tipo de archivo ha sido seleccionado.
-    } else {
-      return Colors.black; // El color predeterminado.
-    }
-  }
-
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.image, size: 28),
-          onPressed: _pickImage, // Tu función existente.
-          color: getColor(0), // Color basado en el estado.
-        ),
-        RecordButton(
-          onSaved: _handleRecordedAudio, // Tu función existente.
-          color: getColor(2), // Añade color aquí, pero necesitarás modificar la clase RecordButton para aceptar el valor de color también.
-        ),
-        IconButton(
-          icon: const Icon(Icons.videocam, size: 28),
-          onPressed: _pickVideo, // Tu función existente.
-          color: getColor(1), // Color basado en el estado.
-        ),
-        IconButton(
-          icon: const Icon(Icons.send, size: 28),
-          onPressed: _sendInformation, // Tu función existente.
-          color: Colors.black, // Este podría permanecer igual ya que no cambia.
-        ),
-      ],
-    ),
-  );
-}
-
 }
 
 class RecordButton extends StatefulWidget {
-  final ValueChanged<String> onSaved; // Callback que recibe la ruta del archivo grabado.
+  final ValueChanged<String>
+      onSaved; // Callback que recibe la ruta del archivo grabado.
   final Color color; // Nuevo: un parámetro para el color del ícono.
 
   // Modifica el constructor para que requiera este nuevo parámetro.
   RecordButton({
-    required this.onSaved, 
+    required this.onSaved,
     this.color = Colors.black, // Puedes dar un color predeterminado.
   });
 
@@ -306,7 +322,6 @@ class _RecordButtonState extends State<RecordButton> {
         setState(() {
           isRecording = true;
         });
-
       } catch (e) {
         print("No se pudo iniciar la grabación: $e");
       }
@@ -323,7 +338,8 @@ class _RecordButtonState extends State<RecordButton> {
       });
 
       if (_recordedFilePath != null) {
-        widget.onSaved(_recordedFilePath!); // Notifica al widget padre mediante el callback.
+        widget.onSaved(
+            _recordedFilePath!); // Notifica al widget padre mediante el callback.
       }
     } catch (e) {
       print("No se pudo detener la grabación: $e");
@@ -338,24 +354,21 @@ class _RecordButtonState extends State<RecordButton> {
     super.dispose();
   }
 
- @override
-Widget build(BuildContext context) {
-  // Usando el color pasado al widget RecordButton para el ícono.
-  return IconButton(
-    icon: Icon(isRecording ? Icons.stop : Icons.mic, color: widget.color),
-    onPressed: () {
-      if (isRecording) {
-        _stopRecording();
-      } else {
-        _startRecording();
-      }
-    },
-  );
+  @override
+  Widget build(BuildContext context) {
+    // Usando el color pasado al widget RecordButton para el ícono.
+    return IconButton(
+      icon: Icon(isRecording ? Icons.stop : Icons.mic, color: widget.color),
+      onPressed: () {
+        if (isRecording) {
+          _stopRecording();
+        } else {
+          _startRecording();
+        }
+      },
+    );
+  }
 }
-}
-
-
-
 
 class Navbar extends StatefulWidget {
   const Navbar({Key? key}) : super(key: key);
@@ -370,7 +383,7 @@ class _NavbarState extends State<Navbar> {
     return Container(
       height: 60,
       decoration: const BoxDecoration(color: Color.fromARGB(255, 34, 34, 34)),
-      child: const GNav(
+      child: GNav(
         iconSize: 24,
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
         duration: Duration(milliseconds: 800),
@@ -385,14 +398,24 @@ class _NavbarState extends State<Navbar> {
             iconColor: Colors.white,
             iconSize: 32,
           ),
-          GButton(
-            icon: Icons.person,
-            iconColor: Colors.white,
-            iconSize: 32,
-          ),
         ],
+        onTabChange: (index) {
+          switch (index) {
+            case 0:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PublicationScreen()),
+              );
+              break;
+            case 1:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Home()),
+              );
+              break;
+          }
+        },
       ),
     );
   }
 }
-

@@ -1,3 +1,4 @@
+import 'package:actividad1c2/feature/publication/presentation/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:actividad1c2/feature/user/presentation/blocks/login/login_bloc.dart';
@@ -9,7 +10,6 @@ import 'feature/user/presentation/pages/register.dart';
 void main() {
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -39,15 +39,14 @@ class MyApp extends StatelessWidget {
         routes: {
           // ------------------Controla todo -------------------------------
           '/login': (context) => BlocProvider<LoginBloc>(
-            create: (context) => LoginBloc(context: context),
-            child: Login(),
-          ),
+                create: (context) => LoginBloc(context: context),
+                child: Login(),
+              ),
           // ------------------- Controla todo------------------------------
           '/register': (context) => Register(),
           //'/NewPassword': (context) => NewPassword(),
           '/new_password': (context) => NewPassword(),
-
-
+          '/Home': (context) => Home(),
         },
       ),
     );

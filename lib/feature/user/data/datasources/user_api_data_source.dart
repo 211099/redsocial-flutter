@@ -12,10 +12,6 @@ import 'package:flutter/material.dart';
 import '../../presentation/pages/login.dart';
 import '../../presentation/pages/new_password.dart';
 
-
-
-
-
 abstract class UserApiDataSource {
   Future<void> registerUser(User user);
   Future<void> logIn({required String email, required String password});
@@ -122,7 +118,8 @@ class UserApiDataSourceImp implements UserApiDataSource {
   }) async {
     try {
       var headers = {'Content-Type': 'application/json'};
-      var url = Uri.parse('https://actual-servant-production.up.railway.app/api/v1/user/login');
+      var url = Uri.parse(
+          'https://actual-servant-production.up.railway.app/api/v1/user/login');
 
       var data = jsonEncode({
         "email": email,
@@ -146,31 +143,37 @@ class UserApiDataSourceImp implements UserApiDataSource {
 
         if (responseData.containsKey("token")) {
           String token = responseData["token"];
-          print('Token de acceso: $token');
-          Navigator.pushReplacementNamed(context, '/new_password');
+          String userId = responseData["userId"];
+          String name = responseData["name"];
+          String nick_name = responseData["nick_name"];
 
+          print('Token de acceso: $token');
+          Navigator.pushReplacementNamed(context, '/Home');
 
           print("entre");
 
           // Guardar el token en SharedPreferences
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', token);
+
+            await prefs.setString('token', token);
+            await prefs.setString('userId', userId);
+            await prefs.setString('name', name);
+            await prefs.setString('nick_name', nick_name);
+
 
           // Redirigir a otra página (por ejemplo, la página de inicio)
-
         } else {
           print('La respuesta no contiene un token.');
         }
-
       } else {
-        throw Exception('Failed to log in. Status code: ${response.statusCode}');
+        throw Exception(
+            'Failed to log in. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error al iniciar sesión: $e');
       throw Exception('Failed to log in due to a network error');
     }
   }
-
 
   Future<void> registerUser(User user) async {
     var headers = {
@@ -179,7 +182,8 @@ class UserApiDataSourceImp implements UserApiDataSource {
 
     var request = http.Request(
         'POST',
-        Uri.parse('https://actual-servant-production.up.railway.app/api/v1/user/register'));
+        Uri.parse(
+            'https://actual-servant-production.up.railway.app/api/v1/user/register'));
 
     request.body = json.encode({
       "name": user.name,
@@ -199,18 +203,14 @@ class UserApiDataSourceImp implements UserApiDataSource {
         print(response.statusCode);
         // Redirigir al usuario a la pantalla de inicio de sesión
       } else {
-        throw Exception('Failed to log in. Status code: ${response.statusCode}');
+        throw Exception(
+            'Failed to log in. Status code: ${response.statusCode}');
       }
-
     } catch (e) {
       print('Error during network call: $e');
       throw Exception('Failed to register user due to a network error: $e');
     }
   }
-
-
-
-
 
   @override
   Future<void> updateUser(

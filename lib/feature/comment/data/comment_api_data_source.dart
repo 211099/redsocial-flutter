@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:actividad1c2/feature/comment/data/comment_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/comment.dart';
 import 'package:http/http.dart' as http;
@@ -14,60 +15,92 @@ abstract class CommentApiDataSource {
 class CommentApiDataSourceImp implements CommentApiDataSource {
   @override
   Future<void> createComment(String idUser, String idPublic, String text) async{
-   var headers = {
+      // Recuperar el token guardado en SharedPreferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('token');
+
+  // Si no hay token, lanzamos un error
+  if (token == null) {
+    throw Exception('Token no encontrado. El usuario debe iniciar sesión.');
+  }
+
+  var headers = {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s'
+    'Authorization': 'Bearer $token',  // Usar el token recuperado
   };
 
+  // Crear la solicitud
   var request = http.Request('POST', Uri.parse('https://actual-servant-production.up.railway.app/api/v1/comment/create'));
+  
+  // Agregar el cuerpo a la solicitud
   request.body = json.encode({
     "id_user": idUser,
     "id_public": idPublic,
     "text": text
   });
+  print(idUser);
+  print(idPublic);
+  print(text);
+
+  // Agregar encabezados a la solicitud
   request.headers.addAll(headers);
 
   try {
+    // Enviar la solicitud y esperar una respuesta
     http.StreamedResponse response = await request.send();
 
-    if (response.statusCode == 200) {
+    // Si la solicitud fue exitosa
+    if (response.statusCode == 201) {
       print(await response.stream.bytesToString());
     } else {
-      // Imprimir solo la razón del error puede no ser muy informativo, considera manejar diferentes códigos de estado
+      // Si la solicitud falla, imprimir la razón del fallo
       print(response.reasonPhrase);
+      throw Exception('Error al crear el comentario: ${response.reasonPhrase}');
     }
   } catch (e) {
-    // Manejar cualquier excepción que ocurra durante la solicitud
-    // Podrías manejar diferentes tipos de errores (como timeouts, falta de conexión a internet, etc.) de manera más específica
-    print(e);
-    // Aquí podrías lanzar la excepción de nuevo, o manejarla según sea necesario para tu aplicación
-    // throw e; 
+    // Captura y manejo de cualquier error que ocurra durante la operación
+    print('Error al enviar la solicitud: $e'); // Re-lanzar el error para ser capturado por cualquier manejo superior
   }
   }
 
   @override
   Future<void> deletecomment(String uuid) async{
-    var headers = {
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s'
+   // Recuperar el token de SharedPreferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('token');
+
+  // Si el token es null, entonces no está disponible en SharedPreferences
+  if (token == null) {
+    throw Exception('No se encontró el token. Es necesario iniciar sesión.');
+  }
+
+  // Preparar los encabezados con el token de autorización
+  var headers = {
+    'Authorization': 'Bearer $token',
   };
 
+  // Crear la solicitud DELETE
   var request = http.Request('DELETE', Uri.parse('https://actual-servant-production.up.railway.app/api/v1/comment/delete/$uuid'));
 
+  // Añadir los encabezados a la solicitud
   request.headers.addAll(headers);
 
   try {
+    // Enviar la solicitud
     http.StreamedResponse response = await request.send();
 
+    // Manejar la respuesta de la solicitud
     if (response.statusCode == 200) {
-      print(await response.stream.bytesToString());
+      print('Comentario eliminado con éxito.');
     } else {
-      // Imprimir solo la razón del error puede no ser muy informativo. Considera manejar diferentes códigos de estado.
-      print(response.reasonPhrase);
+      // Si el servidor responde con un código de error, imprimirlo
+      print('Error al eliminar el comentario: ${response.reasonPhrase}');
+      throw Exception('Error al eliminar el comentario: ${response.reasonPhrase}');
     }
   } catch (e) {
-    // Manejar cualquier excepción que ocurra durante la solicitud.
-    print(e);
-    // Dependiendo de tu flujo de control, podrías optar por lanzar la excepción de nuevo o manejarla de otra manera.
+    // Si ocurre un error al enviar la solicitud, imprimirlo
+    print('Error al enviar la solicitud: $e');
+    throw e; // Puedes optar por lanzar la excepción para manejarla en otro lugar
   }
   }
 
@@ -77,9 +110,8 @@ class CommentApiDataSourceImp implements CommentApiDataSource {
     var headers = {
       'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s' // Reemplaza con tu token real
     };
-  print(uuid);
-    try {
 
+    try {
       var response = await http.get(url, headers: headers);
 
       if (response.statusCode == 200) {
@@ -109,31 +141,48 @@ class CommentApiDataSourceImp implements CommentApiDataSource {
   }
 
   @override
-  Future<void> updateComment(String uuid, String text) async{
-     var headers = {
+   Future<void> updateComment(String uuid, String text) async {
+      // Recuperar el token guardado en SharedPreferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('token');
+
+  // Si no hay token, lanzamos un error
+  if (token == null) {
+    throw Exception('Token no encontrado. El usuario debe iniciar sesión.');
+  }
+
+  var headers = {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiNDhlZjMzZTAtNWU1ZS00NDcxLWI3NjMtYjMyZWQ0Y2YxYjA0IiwiZW1haWwiOiJqdWFuMUBleGFtcGxlLmNvbSIsImlhdCI6MTY5ODIyMDU1OCwiZXhwIjoxNjk4NDg2OTU4fQ.O0FvXI1wMJMF8hTgAVvJLazXjIpWenVaHQo7AIopd4s'
+    'Authorization': 'Bearer $token', // Usar el token recuperado
   };
-  var body = jsonEncode({
+
+  var request = http.Request('PUT', Uri.parse('https://actual-servant-production.up.railway.app/api/v1/comment/update'));
+
+  // Agregar el cuerpo a la solicitud
+  request.body = json.encode({
     "uuid": uuid,
-    "text": text
+    "text": text,
   });
 
-  var uri = Uri.parse('https://actual-servant-production.up.railway.app/api/v1/comment/update');
-  try {
-    var response = await http.put(uri, headers: headers, body: body);
+  // Agregar encabezados a la solicitud
+  request.headers.addAll(headers);
 
+  try {
+    // Enviar la solicitud y esperar una respuesta
+    http.StreamedResponse response = await request.send();
+
+    // Si la solicitud fue exitosa
     if (response.statusCode == 200) {
-      print('Comentario actualizado con éxito.');
+      print(await response.stream.bytesToString());
     } else {
-      // Si el servidor responde con un código de error, lanza un error.
-      print('Falló la actualización del comentario: ${response.reasonPhrase}');
-      throw Exception('Falló la actualización del comentario. Estado: ${response.statusCode}');
+      // Si la solicitud falla, imprimir la razón del fallo
+      print(response.reasonPhrase);
+      throw Exception('Error al actualizar el comentario: ${response.reasonPhrase}');
     }
-  } catch (error) {
-    // Si ocurre algún error durante la ejecución, lanza un error.
-    print('Error al actualizar el comentario: $error');
-    throw Exception('Error al actualizar el comentario: $error');
+  } catch (e) {
+    // Captura y manejo de cualquier error que ocurra durante la operación
+    print('Error al enviar la solicitud: $e');
+    throw e; // Re-lanzar el error para ser capturado por cualquier manejo superior
   }
   }
   

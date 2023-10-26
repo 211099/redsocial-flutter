@@ -8,9 +8,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-
-
 
 class PublicationWidget extends StatelessWidget {
   final Publication publication;
@@ -27,15 +26,22 @@ class PublicationWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(height: 20),
-        HeaderPublication(userName: publication.userName, userNickName: publication.userNickName, idUser: publication.idUser, uuid: publication.uuid),
-        MainPublication(description: publication.description, urlFile: publication.urlFile, typeFile: publication.typeFile),
-        _FooterPublication(uuid: publication.uuid), // Si _FooterPublication necesita datos, considera pasárselos como parámetros también.
+        HeaderPublication(
+            userName: publication.userName,
+            userNickName: publication.userNickName,
+            idUser: publication.idUser,
+            uuid: publication.uuid),
+        MainPublication(
+            description: publication.description,
+            urlFile: publication.urlFile,
+            typeFile: publication.typeFile),
+        _FooterPublication(
+            uuid: publication
+                .uuid), // Si _FooterPublication necesita datos, considera pasárselos como parámetros también.
       ],
     );
   }
 }
-
-
 
 class HeaderPublication extends StatefulWidget {
   final String userName;
@@ -56,6 +62,23 @@ class HeaderPublication extends StatefulWidget {
 }
 
 class _HeaderPublicationState extends State<HeaderPublication> {
+  String uuidUser = ""; // Definiendo uuidUser a nivel de clase
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId(); // Llama a este método para cargar el userId cuando el widget se inicializa.
+  }
+
+  Future<void> _loadUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? userIdFromPrefs = prefs.getString(
+        'userId'); // Asegúrate de usar la misma clave que usaste al guardar el userId.
+    setState(() {
+      uuidUser = userIdFromPrefs ??
+          ""; // Si userIdFromPrefs es null, se usa un string vacío como respaldo.
+    });
+  }
 
   Future<void> _showEditDialog() async {
     final result = await showDialog<String>(
@@ -63,14 +86,16 @@ class _HeaderPublicationState extends State<HeaderPublication> {
       builder: (context) => TextInputEditPublication(),
     );
     if (result != null) {
-      await PublicationApiDataSourceImp().updateDescription(widget.uuid, result);
+      await PublicationApiDataSourceImp()
+          .updateDescription(widget.uuid, result);
       print("Resultado del diálogo: $result");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print(widget.idUser); // Usa 'widget.' para acceder a las variables de instancia del widget
+    print(widget
+        .idUser); // Usa 'widget.' para acceder a las variables de instancia del widget
 
     return Container(
       height: 70,
@@ -93,8 +118,10 @@ class _HeaderPublicationState extends State<HeaderPublication> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                widget.userName, // 'widget.' se utiliza para acceder a las variables del StatefulWidget
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                widget
+                    .userName, // 'widget.' se utiliza para acceder a las variables del StatefulWidget
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Text(
                 widget.userNickName,
@@ -103,7 +130,7 @@ class _HeaderPublicationState extends State<HeaderPublication> {
             ],
           ),
           Spacer(), // para empujar los botones hacia la derecha
-          if (widget.idUser == '48ef33e0-5e5e-4471-b763-b32ed4cf1b04') ...[
+          if (widget.idUser == uuidUser) ...[
             TextButton(
               onPressed: () {
                 _showEditDialog();
@@ -114,7 +141,8 @@ class _HeaderPublicationState extends State<HeaderPublication> {
             TextButton(
               onPressed: () async {
                 // Lógica para "Eliminar".
-                await PublicationApiDataSourceImp().deletePublication(widget.uuid);
+                await PublicationApiDataSourceImp()
+                    .deletePublication(widget.uuid);
                 setState(() {
                   // Si necesitas actualizar la UI después de eliminar una publicación, hazlo aquí.
                 });
@@ -128,13 +156,6 @@ class _HeaderPublicationState extends State<HeaderPublication> {
     );
   }
 }
-
-
-
-
-
-
-
 
 class MainPublication extends StatelessWidget {
   final String description;
@@ -167,9 +188,8 @@ class MainPublication extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return Container(
-        width: double.infinity,
+      width: double.infinity,
       color: const Color.fromARGB(255, 217, 217, 217),
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -177,8 +197,8 @@ class MainPublication extends StatelessWidget {
           Text(
             description, // Utiliza la descripción proporcionada.
             style: TextStyle(
-              // Añade tus estilos aquí
-            ),
+                // Añade tus estilos aquí
+                ),
           ),
           const SizedBox(height: 10),
           // Usamos la función helper para construir el widget correcto basado en el tipo de archivo.
@@ -192,11 +212,7 @@ class MainPublication extends StatelessWidget {
 class _FooterPublication extends StatelessWidget {
   final String uuid;
 
-  const _FooterPublication({
-    Key? key,
-    required this.uuid
-    })
-      : super(key: key);
+  const _FooterPublication({Key? key, required this.uuid}) : super(key: key);
 
   void _showCommentsSheet(BuildContext context) {
     print('footer:');
@@ -206,13 +222,15 @@ class _FooterPublication extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return SizedBox(
-           height: MediaQuery.of(context).size.height * 0.9,
-           child: CommentsBottomSheet(uuidPublication: uuid,),
+          height: MediaQuery.of(context).size.height * 0.9,
+          child: CommentsBottomSheet(
+            uuidPublication: uuid,
+          ),
         );
       },
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -236,7 +254,7 @@ class _FooterPublication extends StatelessWidget {
             onPressed: () {},
           ),
           TextButton(
-            onPressed: () => _showCommentsSheet(context), 
+            onPressed: () => _showCommentsSheet(context),
             child: const Text(
               'Comments',
               style: TextStyle(color: Colors.black),
@@ -249,7 +267,8 @@ class _FooterPublication extends StatelessWidget {
 }
 
 class _ImageBubble extends StatelessWidget {
-  final String imageUrl; // La variable que contendrá la URL pasada a este widget.
+  final String
+      imageUrl; // La variable que contendrá la URL pasada a este widget.
 
   // El constructor de tu widget, que pedirá la URL como un parámetro.
   const _ImageBubble({Key? key, required this.imageUrl}) : super(key: key);
@@ -263,23 +282,25 @@ class _ImageBubble extends StatelessWidget {
       // Aquí, queremos que el ancho sea el máximo disponible. 'double.infinity' hará que se ajuste al ancho del padre.
       width: double.infinity,
       // Puedes ajustar la altura según lo que consideres adecuado para tu diseño.
-      height: size.width * 0.5625, // Esto es solo un ejemplo que mantiene una relación de aspecto de 16:9.
+      height: size.width *
+          0.5625, // Esto es solo un ejemplo que mantiene una relación de aspecto de 16:9.
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Image.network(
           imageUrl,
           width: size.width * 0.9,
-        height: 190,
-          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+          height: 190,
+          loadingBuilder: (BuildContext context, Widget child,
+              ImageChunkEvent? loadingProgress) {
             if (loadingProgress == null) {
               return child;
             }
             return Center(
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            (loadingProgress.expectedTotalBytes ?? 1)
-                        : null,
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        (loadingProgress.expectedTotalBytes ?? 1)
+                    : null,
               ),
             );
           },
@@ -291,7 +312,6 @@ class _ImageBubble extends StatelessWidget {
     );
   }
 }
-
 
 class _VideoBubble extends StatefulWidget {
   final String videoUrl;
@@ -309,8 +329,9 @@ class _VideoBubbleState extends State<_VideoBubble> {
   @override
   void initState() {
     super.initState();
-    _videoPlayerController = VideoPlayerController.network(widget.videoUrl); // Aquí ya no necesitas 'Uri.parse' porque 'network' toma una cadena.
-    
+    _videoPlayerController = VideoPlayerController.network(widget
+        .videoUrl); // Aquí ya no necesitas 'Uri.parse' porque 'network' toma una cadena.
+
     _chewieController = ChewieController(
       videoPlayerController: _videoPlayerController,
       autoPlay: false, // No se reproducirá automáticamente el video al abrir
@@ -340,8 +361,8 @@ class _VideoBubbleState extends State<_VideoBubble> {
 
     return Center(
       child: Container(
-        width: size.width * 0.9,  // Estableces el ancho que desees aquí
-        height: 200,  // Y la altura aquí
+        width: size.width * 0.9, // Estableces el ancho que desees aquí
+        height: 200, // Y la altura aquí
         child: Chewie(
           controller: _chewieController,
         ),
@@ -349,7 +370,6 @@ class _VideoBubbleState extends State<_VideoBubble> {
     );
   }
 }
-
 
 class _AudioBubble extends StatefulWidget {
   final String audioUrl;
@@ -390,8 +410,9 @@ class _AudioBubbleState extends State<_AudioBubble> {
     } else {
       await _audioPlayer.startPlayer(
           fromURI: widget.audioUrl,
-          codec: Codec.aacADTS // Asegúrate de usar el códec correcto para tu archivo de audio.
-      );
+          codec: Codec
+              .aacADTS // Asegúrate de usar el códec correcto para tu archivo de audio.
+          );
     }
 
     setState(() {
@@ -409,8 +430,10 @@ class _AudioBubbleState extends State<_AudioBubble> {
         color: Colors.grey[300], // Solo un color de ejemplo
         borderRadius: BorderRadius.circular(8.0),
       ),
-      child: Row( // Usamos Row para tener icono y algún texto o elemento visual adicional, si se desea.
-        mainAxisAlignment: MainAxisAlignment.center, // Centra el contenido en el contenedor.
+      child: Row(
+        // Usamos Row para tener icono y algún texto o elemento visual adicional, si se desea.
+        mainAxisAlignment:
+            MainAxisAlignment.center, // Centra el contenido en el contenedor.
         children: [
           IconButton(
             icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
@@ -423,13 +446,13 @@ class _AudioBubbleState extends State<_AudioBubble> {
       ),
     );
   }
- 
 }
 
 class CommentsBottomSheet extends StatefulWidget {
   final String uuidPublication;
 
-  CommentsBottomSheet({Key? key, required this.uuidPublication}) : super(key: key);
+  CommentsBottomSheet({Key? key, required this.uuidPublication})
+      : super(key: key);
 
   @override
   _CommentsBottomSheetState createState() => _CommentsBottomSheetState();
@@ -442,20 +465,24 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   void initState() {
     super.initState();
     // Asignamos la llamada al método que obtiene los comentarios a la variable futureComments
-    futureComments = CommentApiDataSourceImp().getCommentsByPublic(widget.uuidPublication);
+    futureComments =
+        CommentApiDataSourceImp().getCommentsByPublic(widget.uuidPublication);
   }
 
-   Future<void> _showEditDialog() async {
+  Future<void> _showEditDialog() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? uuidUser = prefs.getString('userId');
     final result = await showDialog<String>(
       context: context,
       builder: (context) => TextInputAddComment(),
     );
     if (result != null) {
-      await CommentApiDataSourceImp().createComment("57fbf8ba-5f05-482b-a0a5-bed175035b87", widget.uuidPublication, result);
+      await CommentApiDataSourceImp()
+          .createComment(uuidUser!, widget.uuidPublication, result);
       print("Resultado del diálogo: $result");
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -497,7 +524,9 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                   return ListView.builder(
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
-                      return CommentCard(comment: snapshot.data![index]); // Asegúrate de que CommentCard acepte un Comment
+                      return CommentCard(
+                          comment: snapshot.data![
+                              index]); // Asegúrate de que CommentCard acepte un Comment
                     },
                   );
                 }
@@ -510,7 +539,6 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   }
 }
 
-
 class CommentCard extends StatefulWidget {
   final Comment comment;
 
@@ -521,19 +549,40 @@ class CommentCard extends StatefulWidget {
 }
 
 class _CommentCardState extends State<CommentCard> {
+  String? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();  // Carga el userId cuando el widget se inicializa
+  }
+
+  // Función para cargar el userId de SharedPreferences
+  Future<void> _loadUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Esto ahora es un String nullable, así que no se romperá si 'userId' no está presente en SharedPreferences
+    String? id = prefs.getString('userId'); 
+    setState(() {
+      userId = id;  // Esto está bien aunque 'id' sea null
+    });
+}
+
+  
   Future<void> _showEditDialog() async {
     final result = await showDialog<String>(
       context: context, // Ahora puedes referenciar 'context' directamente.
       builder: (context) => TextInputEditComment(),
     );
     if (result != null) {
-      await CommentApiDataSourceImp().updateComment(widget.comment.uuid, result);
+      await CommentApiDataSourceImp()
+          .updateComment(widget.comment.uuid, result);
       print("Resultado del diálogo: $result");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+     bool showButtons = userId != null && userId == widget.comment.idUser;
     return Card(
       margin: EdgeInsets.symmetric(vertical: 10),
       child: Padding(
@@ -551,30 +600,36 @@ class _CommentCardState extends State<CommentCard> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: NetworkImage("https://yesno.wtf/assets/yes10-271c872c91cd72c1e38e72d2f8eda676.gif"), // imagen desde URL
+                      image: NetworkImage(
+                          "https://yesno.wtf/assets/yes10-271c872c91cd72c1e38e72d2f8eda676.gif"), // imagen desde URL
                       fit: BoxFit.cover,
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text(widget.comment.userName, style: TextStyle(fontWeight: FontWeight.bold)), // Acceso a través de 'widget'.
+                Text(widget.comment.userName,
+                    style: TextStyle(
+                        fontWeight:
+                            FontWeight.bold)), // Acceso a través de 'widget'.
               ],
             ),
             const SizedBox(height: 10),
-            Text(widget.comment.text), // Acceso a través de 'widget'.
+            Text(widget.comment.text),// Acceso a través de 'widget'.
+            if (showButtons) 
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
                   onPressed: () {
-                   _showEditDialog();
+                    _showEditDialog();
                   },
                   child: const Text('Editar'),
                 ),
                 const SizedBox(width: 10),
                 TextButton(
                   onPressed: () {
-                    CommentApiDataSourceImp().deletecomment(widget.comment.uuid); // Acceso a través de 'widget'.
+                    CommentApiDataSourceImp().deletecomment(
+                        widget.comment.uuid); // Acceso a través de 'widget'.
                   },
                   child: const Text('Eliminar'),
                 ),
