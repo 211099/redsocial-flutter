@@ -1,6 +1,6 @@
-import 'package:actividad1c2/feature/user/data/user_api_data_source.dart';
-import 'package:actividad1c2/feature/user/domain/user.dart';
-import 'package:actividad1c2/feature/user/domain/user_repository.dart';
+import 'package:actividad1c2/feature/user/data/datasources/user_api_data_source.dart';
+import 'package:actividad1c2/feature/user/domain/entities/user.dart';
+import 'package:actividad1c2/feature/user/domain/repository/user_repository.dart';
 
 class UserRepositoryImp implements UserRepository {
   final UserApiDataSource userApiDataSource;

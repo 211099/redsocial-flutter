@@ -1,6 +1,6 @@
 
 
-import 'package:actividad1c2/feature/user/domain/user.dart';
+import 'package:actividad1c2/feature/user/domain/entities/user.dart';
 
 abstract class UserRepository {
   Future<void> registerUser(User user);
